@@ -1,0 +1,12 @@
+# Python virtual environment
+venv/
+# Or, if you named it differently
+# myenv/
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Other common Python ignores
+*.log
+*.sqlite3
