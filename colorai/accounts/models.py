@@ -6,5 +6,5 @@ from django.db import models
 # Create your models here.
 
 
-class User(AbstractUser):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+# class User(AbstractUser):
+#     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
