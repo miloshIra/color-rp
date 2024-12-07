@@ -17,9 +17,10 @@ Including another URLconf
 
 from coloring.views import home
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("", home, name="home"),
     path("admin/", admin.site.urls),
+    path("", include("api.urls")),
 ]
