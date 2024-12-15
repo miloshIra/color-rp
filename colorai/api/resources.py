@@ -10,7 +10,7 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin,
 )
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -22,14 +22,14 @@ class PromptViewset(ModelViewSet):
     lookup_field = "uuid"
     # permission_classes = [permissions.IsLoggedIn]
     serializer_class = serializers.PromptSerizalizer
-    parser_classes = [JSONParser]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     queryset = color_models.Prompt.objects.all()
 
     def create(self, request, *args, **kwargs):
 
         response = super().create(request, *args, **kwargs)
-        input = request.data["input"]
+        input = request.data["prompt"]
 
         client_response = Client.get_prompt(input=input)
 

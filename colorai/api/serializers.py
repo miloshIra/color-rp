@@ -2,10 +2,14 @@ from coloring import models as models
 from rest_framework import serializers
 
 
-class PromptSerizalizer(serializers.Serializer):
+class PromptSerizalizer(serializers.ModelSerializer):
+    images = serializers.ImageField(required=False)
+
     class Meta:
         model = models.Prompt
-        field = "__all__"
+        fields = ["prompt", "images"]
 
-    def create(selg, validated_data):
-        return models.Prompt.objects.create(**validated_data)
+    # def create(self, validated_data):
+    #     print(**validated_data)
+    #     print(validated_data["prompt"])
+    #     return models.Prompt.objects.create(**validated_data)
