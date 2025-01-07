@@ -1,5 +1,9 @@
+from io import BytesIO
+
+import requests
 from client.client import Client
 from coloring import models as color_models
+from django.core.files import File
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter as drf_OrderingFilter
@@ -28,12 +32,26 @@ class PromptViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
 
-        response = super().create(request, *args, **kwargs)
         input = request.data["prompt"]
 
         client_response = Client.get_prompt(input=input)
 
         if client_response:
-            client_data = client_response.json()
+            file_output = client_response[0]
+            file_url = file_output.url
+            print(file_url)
+            image_response = requests.get(file_url)
+            image_file = BytesIO(image_response.content)
+            image_name = file_url.split("/")[-1]
+            # file_data = file_output.file
+            # file_name = file_output.filename
 
-        return response
+            new_prompt = color_models.Prompt(prompt=input)
+
+            new_prompt.images.save(image_name, File(image_file), save=True)
+
+            return Response({"file_url": file_url}, status=status.HTTP_200_OK)
+
+        return Response(
+            {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
+        )

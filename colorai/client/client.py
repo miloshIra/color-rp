@@ -21,7 +21,10 @@ class Client:
         try:
             output = replicate.run(
                 "black-forest-labs/flux-schnell",
-                input={"prompt": "Make a chields coloring drawing of" + input},
+                input={
+                    "prompt": "Make a black and white drawing that is ment to be colored by children of a"
+                    + input
+                },
             )
 
             print(output)
