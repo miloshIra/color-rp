@@ -22,7 +22,7 @@ class Client:
             output = replicate.run(
                 "black-forest-labs/flux-schnell",
                 input={
-                    "prompt": "Make a black and white drawing that is ment to be colored by children of a"
+                    "prompt": "Make a black and white drawing that is ment to be colored by children of"
                     + input
                 },
             )

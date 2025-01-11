@@ -28,12 +28,13 @@ class PromptViewset(ModelViewSet):
     serializer_class = serializers.PromptSerizalizer
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
-    queryset = color_models.Prompt.objects.all()
+    queryset = color_models.Prompt.objects.all().order_by("-id")
 
     def create(self, request, *args, **kwargs):
 
         input = request.data["prompt"]
 
+        # return Response({"Aladin": "Great success!"}, status=status.HTTP_200_OK)
         client_response = Client.get_prompt(input=input)
 
         if client_response:
