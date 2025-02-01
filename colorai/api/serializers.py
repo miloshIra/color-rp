@@ -9,7 +9,7 @@ class PromptSerizalizer(serializers.ModelSerializer):
         model = models.Prompt
         fields = ["prompt", "images", "uuid"]
 
-    # def create(self, validated_data):
+    # def create(self, instance, validated_data):
     #     print(**validated_data)
     #     print(validated_data["prompt"])
     #     return models.Prompt.objects.create(**validated_data)
