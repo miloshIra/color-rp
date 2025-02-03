@@ -1,5 +1,6 @@
-from coloring import models as models
 from rest_framework import serializers
+
+from coloring import models as models
 
 
 class PromptSerizalizer(serializers.ModelSerializer):
@@ -9,7 +10,19 @@ class PromptSerizalizer(serializers.ModelSerializer):
         model = models.Prompt
         fields = ["prompt", "images", "uuid"]
 
-    # def create(self, instance, validated_data):
-    #     print(**validated_data)
-    #     print(validated_data["prompt"])
-    #     return models.Prompt.objects.create(**validated_data)
+
+class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    supabase_id = serializers.CharField(required=True)
+    username = serializers.CharField(default="new user")
+
+    class Meta:
+        model = models.User
+        fields = [
+            "email",
+            "supabase_id",
+            "username",
+            "first_name",
+            "last_name",
+            "id",
+        ]

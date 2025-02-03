@@ -164,3 +164,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media/")  # Directory to store media files
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+AUTH_USER_MODEL = "coloring.User"

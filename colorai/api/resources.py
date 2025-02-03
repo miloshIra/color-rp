@@ -1,8 +1,7 @@
 from io import BytesIO
 
 import requests
-from client.client import Client
-from coloring import models as color_models
+from django.contrib.auth import get_user_model
 from django.core.files import File
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
 from rest_framework.decorators import action
@@ -15,11 +14,17 @@ from rest_framework.mixins import (
     UpdateModelMixin,
 )
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from client.client import Client
+from coloring import models as color_models
+
 from . import serializers
+
+User = get_user_model()
 
 
 class PromptViewset(ModelViewSet):
@@ -33,9 +38,10 @@ class PromptViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         input = request.data["prompt"]
-
-        # return Response({"Aladin": "Great success!"}, status=status.HTTP_200_OK)
         client_response = Client.get_prompt(input=input)
+        print(request)
+        print(request.data)
+        print(request.user)
 
         if client_response:
             file_output = client_response[0]
@@ -44,8 +50,6 @@ class PromptViewset(ModelViewSet):
             image_response = requests.get(file_url)
             image_file = BytesIO(image_response.content)
             image_name = file_url.split("/")[-1]
-            # file_data = file_output.file
-            # file_name = file_output.filename
 
             new_prompt = color_models.Prompt(prompt=input)
 
@@ -56,3 +60,24 @@ class PromptViewset(ModelViewSet):
         return Response(
             {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
         )
+
+
+class UserViewset(ModelViewSet):
+    serializer_class = serializers.UserSerializer
+    permission_classes = [AllowAny]
+    lookup_field = "supabase_id"
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        print(serializer.validated_data)
+
+        if User.objects.filter(email=request.data["email"]).exists():
+            return Response(
+                {"error": "User already exists"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = User.objects.create_user(**serializer.validated_data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
