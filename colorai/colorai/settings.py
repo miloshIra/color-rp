@@ -82,8 +82,21 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # Default backend
+    "coloring.backends.SupabaseAuthBackend",  # Your custom backend
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "coloring.auth.SupabaseAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+}
+
 
 ROOT_URLCONF = "colorai.urls"
+
 
 TEMPLATES = [
     {
@@ -166,3 +179,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "coloring.User"
+
+SUPABASE_URL = "https://mrikhcwgibcpxfalukhk.supabase.co"
+SUPABASE_JWT_SECRET = "fq7B4UBiJrkYuvEnvZm0T5GW8Czt826QbaEVItkMn5q9129xtHYfB9PsfG0EPEIl48ug9ZpJ79gok4/6PYloLA=="
+SUPABASE_PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaWtoY3dnaWJjcHhmYWx1a2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg2MzI1MzIsImV4cCI6MjA0NDIwODUzMn0.961EUZc9_GUH7MR-M6fm88i4byvpzn0-1rykrqlPpVU"
