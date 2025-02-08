@@ -1,5 +1,4 @@
 import jwt
-import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -28,6 +27,7 @@ class SupabaseAuthBackend:
                 supabase_id=user_id,
                 defaults={
                     "email": payload.get("email"),
+                    "username": payload.get("email"),
                 },
             )
 

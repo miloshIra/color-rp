@@ -3,7 +3,7 @@ from rest_framework import serializers
 from coloring import models as models
 
 
-class PromptSerizalizer(serializers.ModelSerializer):
+class PromptSerializer(serializers.ModelSerializer):
     images = serializers.ImageField(required=False)
 
     class Meta:

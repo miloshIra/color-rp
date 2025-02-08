@@ -30,28 +30,27 @@ User = get_user_model()
 class PromptViewset(ModelViewSet):
     lookup_field = "uuid"
     # permission_classes = [permissions.IsLoggedIn]
-    serializer_class = serializers.PromptSerizalizer
+    serializer_class = serializers.PromptSerializer
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
-    queryset = color_models.Prompt.objects.all().order_by("-id")
+    def get_queryset(self):
+        return color_models.Prompt.objects.filter(user=self.request.user).order_by(
+            "-id"
+        )
 
     def create(self, request, *args, **kwargs):
 
         input = request.data["prompt"]
         client_response = Client.get_prompt(input=input)
-        print(request)
-        print(request.data)
-        print(request.user)
 
         if client_response:
             file_output = client_response[0]
             file_url = file_output.url
-            print(file_url)
             image_response = requests.get(file_url)
             image_file = BytesIO(image_response.content)
             image_name = file_url.split("/")[-1]
 
-            new_prompt = color_models.Prompt(prompt=input)
+            new_prompt = color_models.Prompt(prompt=input, user=request.user)
 
             new_prompt.images.save(image_name, File(image_file), save=True)
 
@@ -60,6 +59,10 @@ class PromptViewset(ModelViewSet):
         return Response(
             {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
         )
+
+    def list(self, request, *args, **kwargs):
+        print("This is the user from the request:", request.user.username)
+        return super().list(request, *args, **kwargs)
 
 
 class UserViewset(ModelViewSet):
