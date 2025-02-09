@@ -25,4 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "id",
+            "is_active",
+            "date_joined",
         ]

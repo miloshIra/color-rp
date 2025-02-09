@@ -23,11 +23,12 @@ class Client:
                 "black-forest-labs/flux-schnell",
                 input={
                     "prompt": "Make a black and white drawing that is ment to be colored by children of"
-                    + input
+                    + input,
+                    "aspect_ratio": "3:2",
+                    "output_format": "jpg",
                 },
             )
 
-            print(output)
             return output
         except ModelError as e:
             return e
