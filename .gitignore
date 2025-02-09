@@ -1,6 +1,7 @@
 # Python virtual environment
 venv/
 migrations/
+media/
 # Or, if you named it differently
 # myenv/
 
@@ -11,3 +12,4 @@ __pycache__/
 # Other common Python ignores
 *.log
 *.sqlite3
+.env

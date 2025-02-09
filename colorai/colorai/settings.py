@@ -14,9 +14,14 @@ import os
 from pathlib import Path
 
 import environ
+from dotenv import load_dotenv
+from replicate.exceptions import ModelError
 
 env = environ.Env()
 environ.Env.read_env()
+
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -180,7 +185,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "coloring.User"
 
-SUPABASE_URL = "https://mrikhcwgibcpxfalukhk.supabase.co"
-SUPABASE_JWT_SECRET = "fq7B4UBiJrkYuvEnvZm0T5GW8Czt826QbaEVItkMn5q9129xtHYfB9PsfG0EPEIl48ug9ZpJ79gok4/6PYloLA=="
-SUPABASE_PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaWtoY3dnaWJjcHhmYWx1a2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg2MzI1MzIsImV4cCI6MjA0NDIwODUzMn0.961EUZc9_GUH7MR-M6fm88i4byvpzn0-1rykrqlPpVU"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1338091856193523712/irclCWU3Xuk8id7D9nvqXBhWAoaeu0xESmnBW5KWrkY9mH8v2EFa4t1yd_ddw13OE9py"
+
+REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+SUPABASE_PUBLIC_KEY = os.getenv("SUPABASE_PUBLIC_KEY")
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
