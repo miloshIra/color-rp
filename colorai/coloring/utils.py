@@ -5,7 +5,9 @@ from datetime import datetime
 
 import requests
 
-discord_webhook_url = "https://discord.com/api/webhooks/1338091856193523712/irclCWU3Xuk8id7D9nvqXBhWAoaeu0xESmnBW5KWrkY9mH8v2EFa4t1yd_ddw13OE9py"
+from colorai import settings
+
+discord_webhook_url = settings.DISCORD_WEBHOOK_URL
 
 
 def upload_file_lowercase_name(instance, filename):

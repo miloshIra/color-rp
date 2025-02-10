@@ -95,15 +95,6 @@ class UserViewset(ModelViewSet):
 
     def get_queryset(self):
         try:
-            # print(self.request.user.supabase_id)
-
-            # user = User.objects.filter(
-            #     supabase_id=self.request.user.supabase_id
-            # ).first()
-            # print(user)
-            # # return user
-            # return User.objects.filter(id=user.id) if user else User.objects.none()
-
             return User.objects.filter(supabase_id=self.request.user.supabase_id)
 
         except Exception as e:
