@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    "coloring",
+    "coloring.apps.ColoringConfig",
     "corsheaders",
 ]
 
@@ -66,6 +66,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://localhost:3000",
+    "http://localhost:3000",
+    "https://localhost:8080",
     "http://localhost:8080",
     "https://yourfrontenddomain.com",
 ]
@@ -191,3 +194,11 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 SUPABASE_PUBLIC_KEY = os.getenv("SUPABASE_PUBLIC_KEY")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+
+DISCORD_STATS_WEBHOOK = os.getenv("DISCORD_STATS_WEBHOOK")
+
+STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
+STORAGE_BUCKET_LOCATION = os.getenv("STORAGE_BUCKET_LOCATION")
+STORAGE_BUCKET_URL = os.getenv("STORAGE_BUCKET_URL")
+STORAGE_KEY = os.getenv("STORAGE_KEY")
+STORAGE_SECRET = os.getenv("STORAGE_SECRET")

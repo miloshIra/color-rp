@@ -19,7 +19,8 @@ class Prompt(models.Model, DateTimeMixin):
         blank=True,
     )
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    images = models.ImageField(_("images"), upload_to="images")
+    image_url = models.URLField(_("image URL"), max_length=500, null=True, blank=True)
+    images = models.ImageField(_("images"), upload_to="images", null=True, blank=True)
 
     def __str__(self):
         return self.prompt or f"Prompt {self.id}"

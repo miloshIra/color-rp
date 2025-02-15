@@ -8,7 +8,7 @@ class PromptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Prompt
-        fields = ["prompt", "images", "uuid"]
+        fields = ["prompt", "uuid", "image_url", "images"]
 
 
 class UserSerializer(serializers.ModelSerializer):

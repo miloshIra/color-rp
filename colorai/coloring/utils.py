@@ -63,5 +63,61 @@ def discord_alert(
         json=payload,
     )
 
-    print("Alert sent to Discord")
-    return "Alert sent to Discord"
+
+def discord_prompt_stats(
+    *,
+    discord_webhook_url: str,
+    prompts: int,
+    size: str,
+    bill: str,
+    user: str,
+) -> str:
+
+    timestamp = str(datetime.now()).split(".")[0]
+    more_info = {"user": user}
+
+    payload = {
+        "content": (
+            f"👀 **SOURCE**: ColoringAI:\n"
+            f"🚨 **Total prompts**: {prompts}\n"
+            f"📝 **Est storage size**: {size}\n"
+            f"⌚ **Timestamp**: {timestamp}\n"
+            f"📊 **Cost so far**: {bill}\n"
+            f"📊 **More Info**: {json.dumps(more_info)}\n"
+            f"--------------------------------"
+        )
+    }
+
+    requests.post(
+        discord_webhook_url,
+        headers={"Content-Type": "application/json"},
+        json=payload,
+    )
+
+
+def discord_user_stats(
+    *,
+    discord_webhook_url: str,
+    number: int,
+) -> str:
+
+    timestamp = str(datetime.now()).split(".")[0]
+    more_info = {}
+
+    payload = {
+        "content": (
+            f"👀 **SOURCE**: ColoringAI:\n"
+            f"🚨 **Total users**: {number}\n"
+            # f"📝 **Est storage size**: {size}\n"
+            # f"⌚ **Timestamp**: {timestamp}\n"
+            # f"📊 **Cost so far**: {bill}\n"
+            # f"📊 **More Info**: {json.dumps(more_info)}\n"
+            f"--------------------------------"
+        )
+    }
+
+    requests.post(
+        discord_webhook_url,
+        headers={"Content-Type": "application/json"},
+        json=payload,
+    )

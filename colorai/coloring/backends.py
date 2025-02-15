@@ -34,10 +34,8 @@ class SupabaseAuthBackend:
             return user
 
         except jwt.ExpiredSignatureError:
-            print("ExpiredSignatureError")
             return None
         except jwt.InvalidTokenError:
-            print("InvalidTokenError")
             return None
 
     def get_user(self, user_id):

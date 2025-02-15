@@ -1,3 +1,5 @@
+import os
+import tempfile
 from io import BytesIO
 
 import requests
@@ -18,6 +20,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from supabase import Client, create_client
 
 from client.client import Client
 from colorai import settings
@@ -28,6 +31,9 @@ from coloring.utils import discord_alert
 from . import serializers
 
 User = get_user_model()
+supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLIC_KEY)
+
+bucket_name = settings.STORAGE_BUCKET_NAME
 
 
 class PromptViewset(ModelViewSet):
@@ -58,23 +64,75 @@ class PromptViewset(ModelViewSet):
                 file_output = client_response[0]
                 file_url = file_output.url
                 image_response = requests.get(file_url)
-                image_file = BytesIO(image_response.content)
-                image_name = file_url.split("/")[-1]
+                image_file = image_response.content
+
+                image_name = f"{file_url.split('/')[-2]}.{file_url.split('.')[-1]}"
 
                 new_prompt = color_models.Prompt(prompt=input, user=request.user)
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".jpg"
+                ) as temp_file:
+                    temp_file.write(image_file)
+                    temp_file_path = temp_file.name
 
-                new_prompt.images.save(image_name, File(image_file), save=True)
+                with open(temp_file_path, "rb") as image:
+                    supabase.storage.from_("images").upload(
+                        image_name,
+                        image,
+                        file_options={
+                            "cache-control": "3600",
+                            "content-type": "image/jpeg",
+                            "upsert": "false",
+                        },
+                    )
+                os.remove(temp_file_path)
+                image_url = supabase.storage.from_(bucket_name).get_public_url(
+                    image_name
+                )
+                new_prompt.image_url = image_url
+                new_prompt.save()
 
-                return Response({"file_url": file_url}, status=status.HTTP_200_OK)
+                serializer = self.get_serializer(new_prompt)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             return Response(
                 {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
             )
         except Exception as e:
+            raise e
             raise DiscordAlertException(
                 message="Error in PromptViewset",
                 error=e,
                 request=request,
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            image_url = request.data.get("image_url")
+
+            if not image_url:
+                return Response(
+                    {"Error": "No image_url provided"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            prompt = color_models.Prompt.objects.filter(
+                user=request.user, image_url=image_url
+            ).first()
+
+            image_filter = prompt.image_url[:-1]
+            image_name = image_filter.split("/")[-1]
+
+            supabase.storage.from_("images").remove([image_name])
+            prompt.delete()
+
+            return Response(
+                {"Message": "Prompt and image successfully deleted"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def list(self, request, *args, **kwargs):
@@ -125,4 +183,23 @@ class UserViewset(ModelViewSet):
                 message=str(e),
                 error=e,
                 request=request,
+            )
+
+    @action(detail=False, methods=["POST"])
+    def exists(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        if not email:
+            return Response(
+                {"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            user = User.objects.get(email=email)
+            return Response(
+                {"exists": True, "message": "User with this email already exists."},
+                status=status.HTTP_200_OK,
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"exists": False, "message": "User does not exist."},
+                status=status.HTTP_200_OK,
             )
