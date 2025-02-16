@@ -5,6 +5,8 @@ from io import BytesIO
 import requests
 from django.contrib.auth import get_user_model
 from django.core.files import File
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter as drf_OrderingFilter
@@ -19,6 +21,7 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
 
@@ -26,7 +29,7 @@ from client.client import Client
 from colorai import settings
 from coloring import models as color_models
 from coloring.exceptions import DiscordAlertException
-from coloring.utils import discord_alert
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 
 from . import serializers
 
@@ -203,3 +206,114 @@ class UserViewset(ModelViewSet):
                 {"exists": False, "message": "User does not exist."},
                 status=status.HTTP_200_OK,
             )
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PaddleWebhookView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        payload = request.body
+        signature = request.headers.get("Paddle-Signature")  # do I need this ?!?!
+
+        data = request.data
+        user_id = data["data"]["custom_data"]["user_id"]
+        subscribed_user = User.objects.filter(supabase_id=user_id).first()
+
+        subscribed_user.prompts_left = 500
+        subscribed_user.save()
+
+        discord_subscription_stats(
+            discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
+            user=subscribed_user.email,
+            action=data["event_type"],
+        )
+
+        return Response({"user": user_id, "status": "subscribed"})
+
+    def andle_subscription_action(self, data, user):
+        user = user.email
+        discord_subscription_stats(
+            discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
+            user=user,
+            action=data["event_type"],
+        )
+
+
+data = {
+    "data": {
+        "id": "sub_01jm7ahxbps9kcr3jhpbaycr46",
+        "items": [
+            {
+                "price": {
+                    "id": "pri_01jktyszwt34s1escp4rk8zz0z",
+                    "name": "Subscription",
+                    "type": "standard",
+                    "status": "active",
+                    "quantity": {"maximum": 1, "minimum": 1},
+                    "tax_mode": "account_setting",
+                    "seller_id": "27322",
+                    "created_at": "2025-02-11T16:52:17.434851Z",
+                    "product_id": "pro_01jktyptn3fjdrt6seb4bb42zs",
+                    "unit_price": {"amount": "599", "currency_code": "USD"},
+                    "updated_at": "2025-02-13T00:16:22.73792Z",
+                    "custom_data": None,
+                    "description": "Monthly payment for application usage, includes over 500+ monthly prompts, countless photos generated, unlimited drawings database, generate once print forever.",
+                    "import_meta": None,
+                    "trial_period": None,
+                    "billing_cycle": {"interval": "month", "frequency": 1},
+                    "unit_price_overrides": [],
+                },
+                "status": "active",
+                "product": {
+                    "id": "pro_01jktyptn3fjdrt6seb4bb42zs",
+                    "name": "ColoringAI",
+                    "type": "standard",
+                    "status": "active",
+                    "image_url": None,
+                    "seller_id": "27322",
+                    "created_at": "2025-02-11T16:50:33.763Z",
+                    "updated_at": "2025-02-13T00:16:59.311Z",
+                    "custom_data": None,
+                    "description": "A subscription to coloring-ai web application that creates coloring drawings for children paint on.",
+                    "tax_category": "standard",
+                },
+                "quantity": 1,
+                "recurring": True,
+                "created_at": "2025-02-16T12:08:28.79Z",
+                "updated_at": "2025-02-16T12:08:28.79Z",
+                "trial_dates": None,
+                "next_billed_at": "2025-03-16T12:08:27.923808Z",
+                "previously_billed_at": "2025-02-16T12:08:27.923808Z",
+            }
+        ],
+        "status": "active",
+        "discount": None,
+        "paused_at": None,
+        "address_id": "add_01jm7ahachmrx94ffwkw7qdtbm",
+        "created_at": "2025-02-16T12:08:28.79Z",
+        "started_at": "2025-02-16T12:08:27.923808Z",
+        "updated_at": "2025-02-16T12:08:28.79Z",
+        "business_id": None,
+        "canceled_at": None,
+        "custom_data": {"user_id": "205d1772-7bd7-4231-8201-245aa838b17f"},
+        "customer_id": "ctm_01jkxw6s9rz0vjsbpz7tc6jc3x",
+        "import_meta": None,
+        "billing_cycle": {"interval": "month", "frequency": 1},
+        "currency_code": "USD",
+        "next_billed_at": "2025-03-16T12:08:27.923808Z",
+        "billing_details": None,
+        "collection_mode": "automatic",
+        "first_billed_at": "2025-02-16T12:08:27.923808Z",
+        "scheduled_change": None,
+        "current_billing_period": {
+            "ends_at": "2025-03-16T12:08:27.923808Z",
+            "starts_at": "2025-02-16T12:08:27.923808Z",
+        },
+    },
+    "event_id": "evt_01jm7ahy1mhnp5y42990maq3cm",
+    "event_type": "subscription.activated",
+    "occurred_at": "2025-02-16T12:08:29.493055Z",
+    "notification_id": "ntf_01jm7ahy61q2pwk2db4na9k3a7",
+}

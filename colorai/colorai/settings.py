@@ -36,7 +36,10 @@ SECRET_KEY = "django-insecure-ki(3ys&8nks9w6m%)_9#bte5su@#*@nlpaagnujoj7*mwv=)8i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "88c6-89-205-63-79.ngrok-free.app",
+    "127.0.0.1",
+]
 
 
 # Application definition
@@ -71,6 +74,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:8080",
     "http://localhost:8080",
     "https://yourfrontenddomain.com",
+    "https://34.194.127.46",
+    "https://54.234.237.108",
+    "https://3.208.120.145",
+    "https://44.226.236.210",
+    "https://44.241.183.62",
+    "https://100.20.172.113",
+    "https://88c6-89-205-63-79.ngrok-free.app",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -188,13 +198,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = "coloring.User"
 
-
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN")
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 SUPABASE_PUBLIC_KEY = os.getenv("SUPABASE_PUBLIC_KEY")
-DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+DISCORD_SUBS_WEBHOOK = os.getenv("DISCORD_SUBS_WEBHOOK")
 DISCORD_STATS_WEBHOOK = os.getenv("DISCORD_STATS_WEBHOOK")
 
 STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")

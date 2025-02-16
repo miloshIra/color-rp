@@ -121,3 +121,31 @@ def discord_user_stats(
         headers={"Content-Type": "application/json"},
         json=payload,
     )
+
+
+def discord_subscription_stats(
+    *,
+    discord_webhook_url: str,
+    user: str,
+    action: str,
+) -> str:
+
+    timestamp = str(datetime.now()).split(".")[0]
+    more_info = {}
+
+    payload = {
+        "content": (
+            f"💰 **SOURCE**: ColoringAI:\n"
+            f"📝 **Users with email**: {user}\n"
+            f"🚨 **Action**: {action}\n"
+            f"⌚ **Timestamp**: {timestamp}\n"
+            # f" ** Total subscriptions is now at {total_subs}\n"
+            f"--------------------------------------"
+        )
+    }
+
+    requests.post(
+        discord_webhook_url,
+        headers={"Content-Type": "application/json"},
+        json=payload,
+    )

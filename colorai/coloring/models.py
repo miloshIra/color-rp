@@ -46,6 +46,7 @@ class User(AbstractUser):
     """
 
     supabase_id = models.CharField(max_length=255, null=True, blank=True)
+    prompts_left = models.IntegerField(default=2)
 
     def __str__(self):
         if self.username:

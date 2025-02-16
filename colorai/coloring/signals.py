@@ -3,7 +3,7 @@ from django.dispatch import receiver
 
 from colorai import settings
 from coloring import models as models
-from coloring.utils import discord_alert, discord_prompt_stats, discord_user_stats
+from coloring.utils import discord_prompt_stats, discord_user_stats
 
 
 @receiver(post_save, sender=models.Prompt)
