@@ -24,3 +24,11 @@ class DiscordAlertException(Exception):
         )
 
         super().__init__(message)
+
+
+class UserNotSubscribedException(Exception):
+    """Custom exception for when a user is not subscribed."""
+
+    def __init__(self, message="User is not subscribed"):
+        self.message = message
+        super().__init__(self.message)

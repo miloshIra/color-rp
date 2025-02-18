@@ -28,7 +28,7 @@ from supabase import Client, create_client
 from client.client import Client
 from colorai import settings
 from coloring import models as color_models
-from coloring.exceptions import DiscordAlertException
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
 from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 
 from . import serializers
@@ -59,9 +59,13 @@ class PromptViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-
-            input = request.data["prompt"]
-            client_response = Client.get_prompt(input=input)
+            if request.user.prompts_left > 0:
+                input = request.data["prompt"]
+                client_response = Client.get_prompt(input=input)
+            else:
+                raise UserNotSubscribedException(
+                    "User not subscribed or out of prompts"
+                )
 
             if client_response:
                 file_output = client_response[0]
@@ -95,6 +99,10 @@ class PromptViewset(ModelViewSet):
                 new_prompt.image_url = image_url
                 new_prompt.save()
 
+                user = User.objects.get(supabase_id=request.user.supabase_id)
+                user.prompts_left = user.prompts_left - 1
+                user.save()
+
                 serializer = self.get_serializer(new_prompt)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -102,7 +110,6 @@ class PromptViewset(ModelViewSet):
                 {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
             )
         except Exception as e:
-            raise e
             raise DiscordAlertException(
                 message="Error in PromptViewset",
                 error=e,
