@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=ubuntu
-ExecStart=python3 /home/ubuntu/color-rp/colorai/manage.py runserver
+ExecStart=bash /home/ubuntu/color-rp/aws/ec2/service.sh
 
 [Install]
 WantedBy=multi-user.target
