@@ -1,9 +1,6 @@
 # Python virtual environment
 venv/
-migrations/
 media/
-# Or, if you named it differently
-# myenv/
 
 # Byte-compiled files
 __pycache__/

@@ -1,0 +1,13 @@
+[Unit]
+Description=color-rp-service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=ubuntu
+ExecStart=python3 /home/ubuntu/color-rp/colorai/manage.py runserver
+
+[Install]
+WantedBy=multi-user.target
