@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from replicate.exceptions import ModelError
 
 load_dotenv()
-print("hi")
+
 API_KEY = os.getenv("REPLICATE_API_TOKEN")
 
 
