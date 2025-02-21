@@ -1,13 +1,15 @@
 [Unit]
 Description=color-rp-service
-StartLimitIntervalSec=0
+After=network.target
 
 [Service]
-Type=simple
-Restart=always
-RestartSec=1
 User=ubuntu
-ExecStart=bash /home/ubuntu/color-rp/aws/ec2/service.sh
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/color-rp
+ExecStart=/bin/bash /home/ubuntu/color-rp/service.sh
+Restart=always
+StandardOutput=append:/var/log/colorai.log
+StandardError=append:/var/log/colorai_error.log
 
 [Install]
 WantedBy=multi-user.target
