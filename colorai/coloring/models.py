@@ -43,10 +43,19 @@ class User(AbstractUser):
         is_staff: bool
         is_active: bool
         date_joined: datetime
+        promts_left: int
+        last_payment_date: DateTime
+        next_payment_date: DateTime
+        billing_period: str
+        is_subscribed: bool
     """
 
     supabase_id = models.CharField(max_length=255, null=True, blank=True)
     prompts_left = models.IntegerField(default=2)
+    last_payment_date = models.DateTimeField(null=True, blank=True)
+    next_payment_date = models.DateTimeField(null=True, blank=True)
+    billing_period = models.CharField(null=True, blank=True, default="monthy")
+    is_subscribed = models.BooleanField(default=False)
 
     def __str__(self):
         if self.username:
@@ -54,11 +63,11 @@ class User(AbstractUser):
         return self.email
 
 
-class Subscription(models.Model):
-    """
-    Subscription model for the application.
-    """
+# class Subscription(models.Model):
+#     """
+#     Subscription model for the application.
+#     """
 
-    is_active = models.BooleanField(default=False)
-    date_subscribed = models.DateTimeField(null=True, blank=True)
-    valid_until = models.DateTimeField(null=True, blank=True)
+#     is_active = models.BooleanField(default=False)
+#     date_subscribed = models.DateTimeField(null=True, blank=True)
+#     valid_until = models.DateTimeField(null=True, blank=True)
