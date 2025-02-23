@@ -9,7 +9,12 @@ from coloring.utils import discord_prompt_stats, discord_user_stats
 @receiver(post_save, sender=models.Prompt)
 def after_prompt_saved(sender, instance, created, **kwargs):
     if created:
-        prompt_count = models.Prompt.objects.all().count()
+        prompt_count = 0
+        users = models.User.objects.all()
+        for user in users:
+            prompt_count = prompt_count + user.total_prompts
+            print(prompt_count)
+
         estimated_storage_size = prompt_count * 280 / 1024
 
         number = str(estimated_storage_size).split(".")[0]
@@ -28,7 +33,7 @@ def after_prompt_saved(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=models.User)
-def after_prompt_saved(sender, instance, created, **kwargs):
+def after_user_saved(sender, instance, created, **kwargs):
     if created:
         users_count = models.User.objects.all().count()
         discord_user_stats(

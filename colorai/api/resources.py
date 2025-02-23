@@ -101,13 +101,15 @@ class PromptViewset(ModelViewSet):
 
                 user = User.objects.get(supabase_id=request.user.supabase_id)
                 user.prompts_left = user.prompts_left - 1
+                user.total_prompts = user.total_prompts + 1
                 user.save()
 
                 serializer = self.get_serializer(new_prompt)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
             return Response(
-                {"Error": "No response from replicate"}, status=status.HTTP_410_GONE
+                {"Error": "No response from model, try later"},
+                status=status.HTTP_410_GONE,
             )
         except Exception as e:
             raise DiscordAlertException(

@@ -27,4 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "is_active",
             "date_joined",
+            "is_subscribed",
+            "prompts_left",
         ]

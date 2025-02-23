@@ -56,6 +56,7 @@ class User(AbstractUser):
     next_payment_date = models.DateTimeField(null=True, blank=True)
     billing_period = models.CharField(null=True, blank=True, default="monthy")
     is_subscribed = models.BooleanField(default=False)
+    total_prompts = models.IntegerField(default=0)
 
     def __str__(self):
         if self.username:
