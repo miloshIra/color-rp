@@ -7,6 +7,9 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+# from paddle_billing import Client as PaddleClient
+# from paddle_billing import Environment, Options
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter as drf_OrderingFilter
@@ -37,6 +40,9 @@ User = get_user_model()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLIC_KEY)
 
 bucket_name = settings.STORAGE_BUCKET_NAME
+
+
+# paddle = PaddleClient(settings.PADDLE_API_KEY, options=Options(Environment.SANDBOX))
 
 
 class PromptViewset(ModelViewSet):
@@ -139,7 +145,7 @@ class PromptViewset(ModelViewSet):
             prompt.delete()
 
             return Response(
-                {"Message": "Prompt and image successfully deleted"},
+                {"message": "Prompt and image successfully deleted"},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
@@ -216,6 +222,34 @@ class UserViewset(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
+    @action(detail=True, methods=["POST"])
+    def unsubscribe(self, request, *args, **kwargs):
+        user_id = kwargs.get("supabase_id")
+        print(user_id)
+        user = User.objects.get(supabase_id=user_id)
+        print(user)
+
+        cancel_url = f"https://api.paddle.com/subscriptions/{user.sub_id}/cancel"
+
+        payload = {
+            "vendor_id": settings.PADDLE_VENDOR_ID,
+            "api_key": settings.PADDLE_API_KEY,
+            "subscription_id": user.sub_id,
+        }
+
+        try:
+            response = requests.post(cancel_url, data=payload)
+            response_data = response.json()
+            print(response_data)
+
+        except Exception as e:
+            print(e)
+
+        # user.is_subscribed = False # Add this when unsubscribe starts working.
+        # user.save()
+
+        return Response({"response": response_data})
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class PaddleWebhookView(APIView):
@@ -226,17 +260,29 @@ class PaddleWebhookView(APIView):
         payload = request.body
         signature = request.headers.get("Paddle-Signature")  # do I need this ?!?!
 
-        data = request.data
-        user_id = data["data"]["custom_data"]["user_id"]
+        data = request.data.get("data")
+        user_id = data["custom_data"]["user_id"]
+        sub_id = data["id"]
+        last_payment_date = data["current_billing_period"]["starts_at"]
+        next_payment_date = data["next_billed_at"]
+
         subscribed_user = User.objects.filter(supabase_id=user_id).first()
 
-        subscribed_user.prompts_left = 500
+        update_fields = {
+            "prompts_left": 500,
+            "next_payment_date": next_payment_date,
+            "last_payment_date": last_payment_date,
+            "sub_id": sub_id,
+        }
+        for field, value in update_fields.items():
+            setattr(subscribed_user, field, value)
+
         subscribed_user.save()
 
         discord_subscription_stats(
             discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
             user=subscribed_user.email,
-            action=data["event_type"],
+            action=request.data.get("event_type"),
         )
 
         return Response({"user": user_id, "status": "subscribed"})
@@ -294,7 +340,6 @@ data = {
                 "updated_at": "2025-02-16T12:08:28.79Z",
                 "trial_dates": None,
                 "next_billed_at": "2025-03-16T12:08:27.923808Z",
-                "previously_billed_at": "2025-02-16T12:08:27.923808Z",
             }
         ],
         "status": "active",

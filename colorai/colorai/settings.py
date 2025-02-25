@@ -36,9 +36,7 @@ SECRET_KEY = "django-insecure-ki(3ys&8nks9w6m%)_9#bte5su@#*@nlpaagnujoj7*mwv=)8i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "*"
-]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -212,3 +210,6 @@ STORAGE_BUCKET_LOCATION = os.getenv("STORAGE_BUCKET_LOCATION")
 STORAGE_BUCKET_URL = os.getenv("STORAGE_BUCKET_URL")
 STORAGE_KEY = os.getenv("STORAGE_KEY")
 STORAGE_SECRET = os.getenv("STORAGE_SECRET")
+
+PADDLE_API_KEY = os.getenv("PADDLE_API_KEY")
+PADDLE_VENDOR_ID = os.getenv("PADDLE_VENDOR_ID")
