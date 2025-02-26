@@ -7,7 +7,10 @@
     - create a new keypair `color-rp` and save the private key (contained in the `.pem` file) locally, and in AWS Secrets Manager
     - create a new security group `color-rp` and create new inboud and outbound rules with `0.0.0.0/0`
 
-2. Set up the instance
+2. Setup an elastic IP address
+
+3. Set up the EC2 instance
+    - attach the elastic IP to the instance
     -  `ssh -i ~/.ssh/color-rp.pem ubuntu@ec2-18-197-200-123.eu-central-1.compute.amazonaws.com`
     - [Generate a new SSH keypair][2] and copy the public key to [color-rp GitHub repo's][3] `Deployment keys` section under settings
     - set up the repo
@@ -28,9 +31,16 @@
         sudo systemctl status color-rp.service
         ```
 
-3. You should now be able to access the service's endpoints via the public URL of the EC2 instance
+4. You should now be able to access the service's endpoints via the public URL of the EC2 instance
 
-4. Redeployment
+5. Link the domain with the EC2 instance
+    - create a new public hosted zone in Route 53
+    - copy the NS record values to the NameCheap account under `Custom DNS`
+    - create a new A-type record for `api.coloring-ai.art` and link it to the elastic IP
+
+5. Redeployment
+
+    - Manual via SSH
 
     ```
     ssh -i ~/.ssh/color-rp.pem ubuntu@ec2-18-197-200-123.eu-central-1.compute.amazonaws.com
@@ -41,6 +51,10 @@
     sudo systemctl restart color-rp.service
     sudo systemctl status color-rp.service
     ```
+
+    - Manual via GitHub Workflows
+
+        Manually trigger the `Deploy` workflow via GitHub Actions.
 
 [1]: https://eu-central-1.console.aws.amazon.com/secretsmanager/secret?name=color-rp%2Fcolor-rp-ec2-private-key&region=eu-central-1
 [2]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
