@@ -11,7 +11,7 @@
 
 3. Set up the EC2 instance
     - attach the elastic IP to the instance
-    -  `ssh -i ~/.ssh/color-rp.pem ubuntu@ec2-18-197-200-123.eu-central-1.compute.amazonaws.com`
+    -  `ssh -i ~/.ssh/color-rp.pem ubuntu@art.coloring-ai.art`
     - [Generate a new SSH keypair][2] and copy the public key to [color-rp GitHub repo's][3] `Deployment keys` section under settings
     - set up the repo
         ```
@@ -30,6 +30,19 @@
         sudo systemctl start color-rp.service
         sudo systemctl status color-rp.service
         ```
+    - set up nginx
+        ```
+        sudo ln -s /home/ubuntu/color-rp/aws/ec2/color-rp.nginx /etc/nginx/sites-enabled/
+        sudo systemctl restart nginx
+        sudo systemctl enable nginx
+        ```
+    - set up SSL certificate
+        ```
+        sudo certbot --nginx -d api.coloring-ai.art
+        sudo nginx -t
+        sudo certbot renew --dry-run
+        sudo systemctl restart nginx
+        ```
 
 4. You should now be able to access the service's endpoints via the public URL of the EC2 instance
 
@@ -43,7 +56,7 @@
     - Manual via SSH
 
     ```
-    ssh -i ~/.ssh/color-rp.pem ubuntu@ec2-18-197-200-123.eu-central-1.compute.amazonaws.com
+    ssh -i ~/.ssh/color-rp.pem ubuntu@art.coloring-ai.art
 
     cd /home/ubuntu/color-rp
     git pull
