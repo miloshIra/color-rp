@@ -30,6 +30,19 @@
         sudo systemctl start color-rp.service
         sudo systemctl status color-rp.service
         ```
+    - set up nginx
+        ```
+        sudo ln -s /home/ubuntu/color-rp/aws/ec2/color-rp.nginx /etc/nginx/sites-enabled/
+        sudo systemctl restart nginx
+        sudo systemctl enable nginx
+        ```
+    - set up SSL certificate
+        ```
+        sudo certbot --nginx -d api.coloring-ai.art
+        sudo nginx -t
+        sudo certbot renew --dry-run
+        sudo systemctl restart nginx
+        ```
 
 4. You should now be able to access the service's endpoints via the public URL of the EC2 instance
 
