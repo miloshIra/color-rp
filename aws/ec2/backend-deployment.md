@@ -11,7 +11,7 @@
 
 3. Set up the EC2 instance
     - attach the elastic IP to the instance
-    -  `ssh -i ~/.ssh/color-rp.pem ubuntu@63.176.203.198`
+    -  `ssh -i ~/.ssh/color-rp.pem ubuntu@api.coloring-ai.art`
     - [Generate a new SSH keypair][2] and copy the public key to [color-rp GitHub repo's][3] `Deployment keys` section under settings
     - set up the repo
         ```
@@ -56,7 +56,7 @@
     - Manual via SSH
 
     ```
-    ssh -i ~/.ssh/color-rp.pem ubuntu@63.176.203.198
+    ssh -i ~/.ssh/color-rp.pem ubuntu@api.coloring-ai.art
 
     cd /home/ubuntu/color-rp
     git pull
