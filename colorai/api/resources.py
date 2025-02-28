@@ -7,9 +7,6 @@ from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-# from paddle_billing import Client as PaddleClient
-# from paddle_billing import Environment, Options
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter as drf_OrderingFilter
@@ -40,9 +37,6 @@ User = get_user_model()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLIC_KEY)
 
 bucket_name = settings.STORAGE_BUCKET_NAME
-
-
-# paddle = PaddleClient(settings.PADDLE_API_KEY, options=Options(Environment.SANDBOX))
 
 
 class PromptViewset(ModelViewSet):

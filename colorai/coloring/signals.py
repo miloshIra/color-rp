@@ -11,15 +11,15 @@ def after_prompt_saved(sender, instance, created, **kwargs):
     if created:
         prompt_count = 0
         users = models.User.objects.all()
+        prompts = models.Prompt.objects.all().count()
         for user in users:
             prompt_count = prompt_count + user.total_prompts
-            print(prompt_count)
 
-        estimated_storage_size = prompt_count * 280 / 1024
+        estimated_storage_size = prompts * 200 / 1024
 
         number = str(estimated_storage_size).split(".")[0]
-
         decimal = str(estimated_storage_size).split(".")[1]
+
         size = number + "." + decimal[:2] + "MB"
         bill = str(prompt_count * 0.0036) + " $"
 
