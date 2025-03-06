@@ -63,8 +63,9 @@ class PromptViewset(ModelViewSet):
                 input = request.data["prompt"]
                 client_response = Client.get_prompt(input=input)
             else:
-                raise UserNotSubscribedException(
-                    "User not subscribed or out of prompts"
+                return Response(
+                    {"error": "User not subscribed or out of prompts"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if client_response:

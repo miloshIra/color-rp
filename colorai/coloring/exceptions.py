@@ -3,6 +3,7 @@ import traceback
 from datetime import datetime
 
 import requests
+from rest_framework import status
 
 from colorai import settings
 from coloring.utils import discord_alert
@@ -29,6 +30,11 @@ class DiscordAlertException(Exception):
 class UserNotSubscribedException(Exception):
     """Custom exception for when a user is not subscribed."""
 
-    def __init__(self, message="User is not subscribed"):
-        self.message = message
-        super().__init__(self.message)
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "User is not subscribed or out of prompts."
+
+    def __init__(self, message=None):
+        if message:
+            self.detail = message
+        else:
+            self.detail = self.default_detail
