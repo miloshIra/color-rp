@@ -24,7 +24,7 @@
         - paste the content from [color-rp/.env][4] and save the file
     - create a systemd service
         ```
-        sudo cp /home/ubuntu/color-rp/aws/ec2/color-rp.service /etc/systemd/system/color-rp.service
+        sudo ln -s /home/ubuntu/color-rp/aws/ec2/color-rp.service /etc/systemd/system/color-rp.service
         sudo systemctl daemon-reload
         sudo systemctl enable color-rp.service
         sudo systemctl start color-rp.service
@@ -33,8 +33,7 @@
     - set up nginx
         ```
         sudo ln -s /home/ubuntu/color-rp/aws/ec2/color-rp.nginx /etc/nginx/sites-enabled/
-        sudo systemctl restart nginx
-        sudo systemctl enable nginx
+        sudo nginx -s reload
         ```
     - set up SSL certificate
         ```
