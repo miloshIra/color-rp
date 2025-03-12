@@ -15,7 +15,7 @@
     - [Generate a new SSH keypair][2] and copy the public key to [color-rp GitHub repo's][3] `Deployment keys` section under settings
     - set up the repo
         ```
-        git clone https://github.com/miloshIra/color-rp
+        git clone git@github.com:miloshIra/color-rp.git
         cd color-rp
         bash ./aws/ec2/startup-script.sh
         touch .env
@@ -35,22 +35,21 @@
         sudo ln -s /home/ubuntu/color-rp/aws/ec2/color-rp.nginx /etc/nginx/sites-enabled/
         sudo nginx -s reload
         ```
-    - set up SSL certificate
-        ```
-        sudo certbot --nginx -d api.coloring-ai.art
-        sudo nginx -t
-        sudo certbot renew --dry-run
-        sudo systemctl restart nginx
-        ```
 
-4. You should now be able to access the service's endpoints via the public URL of the EC2 instance
-
-5. Link the domain with the EC2 instance
+4. Link the domain with the EC2 instance
     - create a new public hosted zone in Route 53
     - copy the NS record values to the NameCheap account under `Custom DNS`
     - create a new A-type record for `api.coloring-ai.art` and link it to the elastic IP
 
-5. Redeployment
+5. set up SSL certificate
+    ```
+    sudo certbot --nginx -d api.coloring-ai.art
+    sudo nginx -t
+    sudo certbot renew --dry-run
+    sudo systemctl restart nginx
+    ```
+
+6. Redeployment
 
     - Manual via SSH
 
