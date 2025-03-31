@@ -29,4 +29,5 @@ class UserSerializer(serializers.ModelSerializer):
             "date_joined",
             "is_subscribed",
             "prompts_left",
+            "accepted_terms",
         ]

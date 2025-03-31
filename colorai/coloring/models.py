@@ -57,6 +57,7 @@ class User(AbstractUser):
     billing_period = models.CharField(null=True, blank=True, default="monthy")
     is_subscribed = models.BooleanField(default=False)
     total_prompts = models.IntegerField(default=0)
+    accepted_terms = models.BooleanField(default=False)
     sub_id = models.CharField(null=True, blank=True)
 
     def __str__(self):
