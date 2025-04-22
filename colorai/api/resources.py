@@ -3,6 +3,10 @@ import tempfile
 from io import BytesIO
 
 import requests
+from client.client import Client
+from coloring import models as color_models
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
 from django.core.files import File
 from django.utils.decorators import method_decorator
@@ -25,11 +29,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
 
-from client.client import Client
 from colorai import settings
-from coloring import models as color_models
-from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
-from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 
 from . import serializers
 
@@ -244,6 +244,17 @@ class UserViewset(ModelViewSet):
         # user.save()
 
         return Response({"response": response_data})
+
+    @action(detail=True, methods=["PATCH"])
+    def terms(self, request, *args, **kwargs):
+        user_id = kwargs.get("supabase_id")
+        print(kwargs.get("supabase_id"))
+        user = User.objects.filter(supabase_id=user_id).first()
+        print(user)
+        user.accepted_terms = True
+        user.save()
+
+        return Response({"detail": "User accepted terms"})
 
 
 @method_decorator(csrf_exempt, name="dispatch")
