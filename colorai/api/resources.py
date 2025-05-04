@@ -279,6 +279,7 @@ class PaddleWebhookView(APIView):
             "next_payment_date": next_payment_date,
             "last_payment_date": last_payment_date,
             "sub_id": sub_id,
+            "is_subscribed": True,
         }
         for field, value in update_fields.items():
             setattr(subscribed_user, field, value)
