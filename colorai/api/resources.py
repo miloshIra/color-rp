@@ -276,10 +276,10 @@ class PaddleWebhookView(APIView):
 
         update_fields = {
             "prompts_left": 500,
+            "is_subscribed": True,
             "next_payment_date": next_payment_date,
             "last_payment_date": last_payment_date,
             "sub_id": sub_id,
-            "is_subscribed": True,
         }
         for field, value in update_fields.items():
             setattr(subscribed_user, field, value)
