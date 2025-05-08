@@ -3,7 +3,7 @@ import tempfile
 from io import BytesIO
 
 import requests
-from client.client import Client
+from client.client import RepliateClient
 from coloring import models as color_models
 from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
 from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
@@ -61,7 +61,7 @@ class PromptViewset(ModelViewSet):
         try:
             if request.user.prompts_left > 0:
                 input = request.data["prompt"]
-                client_response = Client.get_prompt(input=input)
+                client_response = RepliateClient.get_prompt(input=input)
             else:
                 return Response(
                     {"error": "User not subscribed or out of prompts"},

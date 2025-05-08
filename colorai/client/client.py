@@ -13,7 +13,7 @@ API_KEY = os.getenv("REPLICATE_API_TOKEN")
 replicate = replicate.Client(api_token=API_KEY)
 
 
-class Client:
+class RepliateClient:
     def __init__(self) -> None:
         self.hi = "HI"
 
