@@ -281,12 +281,12 @@ class PaddleWebhookView(APIView):
             last_payment_date = data["current_billing_period"]["starts_at"]
             next_payment_date = data["next_billed_at"]
 
-        subscribed_user = User.objects.filter(supabase_id=user_id).first()
+            subscribed_user = User.objects.filter(supabase_id=user_id).first()
 
             update_fields = {
                 "prompts_left": 500,
                 "is_subscribed": True,
-            "next_payment_date": next_payment_date,
+                "next_payment_date": next_payment_date,
                 "last_payment_date": last_payment_date,
                 "sub_id": sub_id,
                 }
@@ -307,7 +307,7 @@ class PaddleWebhookView(APIView):
             {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
-    def andle_subscription_action(self, data, user):
+    def handle_subscription_action(self, data, user):
         user = user.email
         discord_subscription_stats(
             discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
