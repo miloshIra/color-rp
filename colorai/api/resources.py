@@ -30,13 +30,16 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
 
+
+import logging
+
 from colorai import settings
 
 from . import serializers
 
 User = get_user_model()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLIC_KEY)
-
+logger = logging.getLogger(__name__)
 bucket_name = settings.STORAGE_BUCKET_NAME
 
 
@@ -291,6 +294,7 @@ class PaddleWebhookView(APIView):
                 "sub_id": sub_id,
                 }
             for field, value in update_fields.items():
+                logger.warning(field, value)
                 setattr(subscribed_user, field, value)
 
             subscribed_user.save()
