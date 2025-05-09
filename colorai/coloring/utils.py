@@ -131,7 +131,6 @@ def discord_subscription_stats(
 ) -> str:
 
     timestamp = str(datetime.now()).split(".")[0]
-    more_info = {}
 
     payload = {
         "content": (
@@ -139,6 +138,9 @@ def discord_subscription_stats(
             f"📝 **Users with email**: {user}\n"
             f"🚨 **Action**: {action}\n"
             f"⌚ **Timestamp**: {timestamp}\n"
+            # f"📊 **More Info**: {json.dumps(more_info)}\n"
+            # if more_info
+            # else ""
             # f" ** Total subscriptions is now at {total_subs}\n"
             f"--------------------------------------"
         )

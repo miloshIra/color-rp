@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import typing
 
 import jwt
@@ -45,3 +47,29 @@ class SupabaseAuthBackend:
             return User.objects.get(supabase_id=user_id)
         except User.DoesNotExist:
             return None
+
+
+class PaddleAuthBackend:
+    def verify_token(*, paddle_signature, body_raw):
+        signature_parts = paddle_signature.split(";")
+        secret = settings.PADDLE_SECRET
+        if len(signature_parts) != 2:
+            return {"error": "Invalid signiture"}
+
+        timestamp = signature_parts[0].split("=")[1]
+        signature = signature_parts[1].split("=")[1]
+
+        if not timestamp or not signature:
+            print("Unable to extract timestamp or signature from signature")
+            return {"error": "Unable to extract timestamp or signature from signature"}
+
+        signed_payload = f"{timestamp}:{body_raw}"
+        computed_hash = hmac.new(
+            secret.encode(), signed_payload.encode(), hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(computed_hash, signature):
+            print("Computed signature does not match Paddle signature")
+            return {"error": "Invalid signature"}
+
+        return {"success": True}

@@ -5,6 +5,7 @@ from io import BytesIO
 import requests
 from client.client import RepliateClient
 from coloring import models as color_models
+from coloring.backends import PaddleAuthBackend
 from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
 from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
@@ -263,36 +264,48 @@ class PaddleWebhookView(APIView):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
-        payload = request.body
-        signature = request.headers.get("Paddle-Signature")  # do I need this ?!?!
+        body_raw = request.body.decode("utf-8")
+        signature = request.headers.get("Paddle-Signature")
+
+        check_token = PaddleAuthBackend.verify_token(
+            paddle_signature=signature, body_raw=body_raw
+        )
 
         data = request.data.get("data")
         user_id = data["custom_data"]["user_id"]
-        sub_id = data["id"]
-        last_payment_date = data["current_billing_period"]["starts_at"]
-        next_payment_date = data["next_billed_at"]
+        subscribed_user = User.objects.filter(supabase_id=user_id).first()
+
+        if check_token.get("success"):
+
+            sub_id = data["id"]
+            last_payment_date = data["current_billing_period"]["starts_at"]
+            next_payment_date = data["next_billed_at"]
 
         subscribed_user = User.objects.filter(supabase_id=user_id).first()
 
-        update_fields = {
-            "prompts_left": 500,
-            "is_subscribed": True,
+            update_fields = {
+                "prompts_left": 500,
+                "is_subscribed": True,
             "next_payment_date": next_payment_date,
-            "last_payment_date": last_payment_date,
-            "sub_id": sub_id,
-        }
-        for field, value in update_fields.items():
-            setattr(subscribed_user, field, value)
+                "last_payment_date": last_payment_date,
+                "sub_id": sub_id,
+                }
+            for field, value in update_fields.items():
+                setattr(subscribed_user, field, value)
 
-        subscribed_user.save()
+            subscribed_user.save()
 
-        discord_subscription_stats(
-            discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
-            user=subscribed_user.email,
-            action=request.data.get("event_type"),
+            discord_subscription_stats(
+                discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
+                user=subscribed_user.email,
+                action=request.data.get("event_type"),
+            )
+
+            return Response({"user": user_id, "status": "subscribed"})
+
+        return Response(
+            {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
         )
-
-        return Response({"user": user_id, "status": "subscribed"})
 
     def andle_subscription_action(self, data, user):
         user = user.email
