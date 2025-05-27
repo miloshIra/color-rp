@@ -283,18 +283,15 @@ class PaddleWebhookView(APIView):
             sub_id = data["id"]
             last_payment_date = data["current_billing_period"]["starts_at"]
             next_payment_date = data["next_billed_at"]
-
-            subscribed_user = User.objects.filter(supabase_id=user_id).first()
-
+            
             update_fields = {
                 "prompts_left": 500,
-                "is_subscribed": True,
                 "next_payment_date": next_payment_date,
                 "last_payment_date": last_payment_date,
                 "sub_id": sub_id,
-                }
+                "is_subscribed": True,
+            }
             for field, value in update_fields.items():
-                logger.warning(field, value)
                 setattr(subscribed_user, field, value)
 
             subscribed_user.save()
@@ -395,3 +392,7 @@ data = {
     "occurred_at": "2025-02-16T12:08:29.493055Z",
     "notification_id": "ntf_01jm7ahy61q2pwk2db4na9k3a7",
 }
+
+
+def _i_dont_even_know_how_to_write_code():
+    pass
