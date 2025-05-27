@@ -10,18 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v2 
+      - uses: actions/checkout@v2
+
       - name: Restart the systemd service
         env:
-            PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-            HOSTNAME: ${{secrets.SSH_HOST}}
-            USER_NAME: ${{secrets.USER_NAME}}
-      
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.SSH_HOST }}
+          USER_NAME: ${{ secrets.USER_NAME }}
+        
         run: |
+          set -e  # Fail the script on any command error
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@${HOSTNAME} '
-
-              cd /home/ubuntu/color-rp
-              git pull
-              sudo systemctl restart color-rp.service
-              '
+          
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
+            set -e  # Ensure remote script fails on error
+            cd /home/ubuntu/color-rp
+            git pull
+            sudo systemctl restart color-rp.service
+            sudo systemctl is-active --quiet color-rp.service
+          EOF

@@ -3,7 +3,7 @@ import tempfile
 from io import BytesIO
 
 import requests
-from client.client import Client
+from client.client import RepliateClient
 from coloring import models as color_models
 from coloring.backends import PaddleAuthBackend
 from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
@@ -30,13 +30,16 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
 
+
+import logging
+
 from colorai import settings
 
 from . import serializers
 
 User = get_user_model()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_PUBLIC_KEY)
-
+logger = logging.getLogger(__name__)
 bucket_name = settings.STORAGE_BUCKET_NAME
 
 
@@ -62,7 +65,7 @@ class PromptViewset(ModelViewSet):
         try:
             if request.user.prompts_left > 0:
                 input = request.data["prompt"]
-                client_response = Client.get_prompt(input=input)
+                client_response = RepliateClient.get_prompt(input=input)
             else:
                 return Response(
                     {"error": "User not subscribed or out of prompts"},
@@ -280,7 +283,7 @@ class PaddleWebhookView(APIView):
             sub_id = data["id"]
             last_payment_date = data["current_billing_period"]["starts_at"]
             next_payment_date = data["next_billed_at"]
-
+            
             update_fields = {
                 "prompts_left": 500,
                 "next_payment_date": next_payment_date,
@@ -305,7 +308,7 @@ class PaddleWebhookView(APIView):
             {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
-    def andle_subscription_action(self, data, user):
+    def handle_subscription_action(self, data, user):
         user = user.email
         discord_subscription_stats(
             discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
