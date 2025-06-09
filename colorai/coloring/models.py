@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from . import utils as utils
@@ -64,6 +65,12 @@ class User(AbstractUser):
         if self.username:
             return self.username
         return self.email
+
+
+class Visitor(models.Model):
+    visitor_id = models.CharField(max_length=255, null=True, blank=True)
+    request_count = models.PositiveBigIntegerField(default=0)
+    last_seen = models.DateTimeField(default=timezone.now)
 
 
 # class Subscription(models.Model):

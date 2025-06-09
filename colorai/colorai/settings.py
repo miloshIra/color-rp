@@ -95,6 +95,7 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "accept",
     "x-requested-with",
+    "X-Visitor-ID",
 ]
 
 AUTHENTICATION_BACKENDS = [

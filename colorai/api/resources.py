@@ -1,15 +1,10 @@
+import logging
 import os
 import tempfile
 from io import BytesIO
 
 import requests
-from client.client import RepliateClient
-from coloring import models as color_models
-from coloring.backends import PaddleAuthBackend
-from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
-from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
-from django.core.files import File
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import exceptions, generics, pagination, status, views, viewsets
@@ -30,10 +25,13 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
 
-
-import logging
-
+from client.client import RepliateClient
 from colorai import settings
+from coloring import models as color_models
+from coloring.backends import PaddleAuthBackend
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
+from coloring.permissions import LimitedAnonymousAccess
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 
 from . import serializers
 
@@ -45,7 +43,7 @@ bucket_name = settings.STORAGE_BUCKET_NAME
 
 class PromptViewset(ModelViewSet):
     lookup_field = "uuid"
-    # permission_classes = [permissions.IsLoggedIn]
+    permission_classes = [LimitedAnonymousAccess]
     serializer_class = serializers.PromptSerializer
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -63,7 +61,10 @@ class PromptViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            if request.user.prompts_left > 0:
+            if request.user.is_authenticated and request.user.prompts_left > 0:
+                input = request.data["prompt"]
+                client_response = RepliateClient.get_prompt(input=input)
+            elif request.user.is_anonymous:
                 input = request.data["prompt"]
                 client_response = RepliateClient.get_prompt(input=input)
             else:
@@ -80,7 +81,9 @@ class PromptViewset(ModelViewSet):
 
                 image_name = f"{file_url.split('/')[-2]}.{file_url.split('.')[-1]}"
 
-                new_prompt = color_models.Prompt(prompt=input, user=request.user)
+                new_prompt = color_models.Prompt(
+                    prompt=input, user=request.user
+                )  ## You are here this fails beause you have no user instance :)
                 with tempfile.NamedTemporaryFile(
                     delete=False, suffix=".jpg"
                 ) as temp_file:
@@ -116,6 +119,7 @@ class PromptViewset(ModelViewSet):
                 {"Error": "No response from model, try later"},
                 status=status.HTTP_410_GONE,
             )
+
         except Exception as e:
             raise DiscordAlertException(
                 message="Error in PromptViewset",
@@ -283,7 +287,7 @@ class PaddleWebhookView(APIView):
             sub_id = data["id"]
             last_payment_date = data["current_billing_period"]["starts_at"]
             next_payment_date = data["next_billed_at"]
-            
+
             update_fields = {
                 "prompts_left": 500,
                 "next_payment_date": next_payment_date,

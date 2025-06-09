@@ -1,6 +1,5 @@
 import hashlib
 import hmac
-import typing
 
 import jwt
 from django.conf import settings
@@ -16,6 +15,7 @@ class SupabaseAuthBackend:
             return None
 
         try:
+            print("What ?")
             payload = jwt.decode(
                 token,
                 settings.SUPABASE_JWT_SECRET,
@@ -38,14 +38,19 @@ class SupabaseAuthBackend:
             return user
 
         except jwt.ExpiredSignatureError:
+            print("Problem is expired")
             return None
         except jwt.InvalidTokenError:
+            visitor_id = request.headers.get("X-Visitor-ID")
+            print(request.headers)
+            print(visitor_id)
             return None
 
     def get_user(self, user_id):
         try:
             return User.objects.get(supabase_id=user_id)
         except User.DoesNotExist:
+            print("no user asshole!?")
             return None
 
 
