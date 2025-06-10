@@ -61,7 +61,11 @@ class PromptViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            if request.user.is_authenticated and request.user.prompts_left > 0:
+            if (
+                request.user.is_authenticated
+                and request.user.prompts_left > 0
+                and request.user.is_subscribed
+            ):
                 input = request.data["prompt"]
                 client_response = RepliateClient.get_prompt(input=input)
             elif request.user.is_anonymous:
@@ -69,8 +73,8 @@ class PromptViewset(ModelViewSet):
                 client_response = RepliateClient.get_prompt(input=input)
             else:
                 return Response(
-                    {"error": "User not subscribed or out of prompts"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {"detail": "User not subscribed or out of prompts"},
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
             if client_response:
@@ -80,10 +84,12 @@ class PromptViewset(ModelViewSet):
                 image_file = image_response.content
 
                 image_name = f"{file_url.split('/')[-2]}.{file_url.split('.')[-1]}"
-
+                visitor = request.headers.get("X-Visitor-ID")
                 new_prompt = color_models.Prompt(
-                    prompt=input, user=request.user
-                )  ## You are here this fails beause you have no user instance :)
+                    prompt=input,
+                    user=request.user if request.user.is_authenticated else None,
+                    visitor=visitor if request.user.is_anonymous else None,
+                )
                 with tempfile.NamedTemporaryFile(
                     delete=False, suffix=".jpg"
                 ) as temp_file:
@@ -107,10 +113,11 @@ class PromptViewset(ModelViewSet):
                 new_prompt.image_url = image_url
                 new_prompt.save()
 
-                user = User.objects.get(supabase_id=request.user.supabase_id)
-                user.prompts_left = user.prompts_left - 1
-                user.total_prompts = user.total_prompts + 1
-                user.save()
+                if request.user.is_authenticated:
+                    user = User.objects.get(supabase_id=request.user.supabase_id)
+                    user.prompts_left = user.prompts_left - 1
+                    user.total_prompts = user.total_prompts + 1
+                    user.save()
 
                 serializer = self.get_serializer(new_prompt)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -187,8 +194,6 @@ class UserViewset(ModelViewSet):
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-
-            print(serializer.validated_data)
 
             if User.objects.filter(email=request.data["email"]).exists():
                 return Response(

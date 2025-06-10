@@ -28,7 +28,7 @@ def after_prompt_saved(sender, instance, created, **kwargs):
             prompts=prompt_count,
             size=size,
             bill=bill,
-            user=instance.user.email,
+            user=instance.user.email if instance.user else "anon",
         )
 
 

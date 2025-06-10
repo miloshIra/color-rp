@@ -19,6 +19,7 @@ class Prompt(models.Model, DateTimeMixin):
         null=True,
         blank=True,
     )
+    visitor = models.UUIDField(null=True, blank=True)
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     image_url = models.URLField(_("image URL"), max_length=500, null=True, blank=True)
     images = models.ImageField(_("images"), upload_to="images", null=True, blank=True)
