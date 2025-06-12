@@ -48,16 +48,29 @@ class PromptViewset(ModelViewSet):
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_queryset(self):
-        try:
-            return color_models.Prompt.objects.filter(user=self.request.user).order_by(
-                "-id"
-            )
-        except Exception as e:
-            raise DiscordAlertException(
-                message=str(e),
-                error=e,
-                request=self.request,
-            )
+        if self.request.user.is_authenticated:
+            try:
+                return color_models.Prompt.objects.filter(
+                    user=self.request.user
+                ).order_by("-id")
+            except Exception as e:
+                raise DiscordAlertException(
+                    message=str(e),
+                    error=e,
+                    request=self.request,
+                )
+
+        elif visitor := self.request.headers.get("X-Visitor-ID"):
+            try:
+                return color_models.Prompt.object.filter(visitor=visitor).order_by(
+                    "-id"
+                )
+            except Exception as e:
+                raise DiscordAlertException(
+                    message=str(e),
+                    error=e,
+                    request=self.request,
+                )
 
     def create(self, request, *args, **kwargs):
         try:
@@ -73,7 +86,9 @@ class PromptViewset(ModelViewSet):
                 client_response = RepliateClient.get_prompt(input=input)
             else:
                 return Response(
-                    {"detail": "User not subscribed or out of prompts"},
+                    {
+                        "detail": "No subscription or out of prompts! Click Subscribe on the top right to continue!"
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 

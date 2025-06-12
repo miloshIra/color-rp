@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 
 import jwt
 from django.conf import settings
@@ -7,15 +8,18 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+logger = logging.getLogger()
+logging.basicConfig(level=logging.INFO)
+
 
 class SupabaseAuthBackend:
     def authenticate(self, request, token=None):
         if not token:
-            print("NO TOKEN")
+            logger.warning("NO TOKEN")
             return None
 
         try:
-            print("What ?")
+            logger.warning("What ?")
             payload = jwt.decode(
                 token,
                 settings.SUPABASE_JWT_SECRET,
@@ -38,19 +42,19 @@ class SupabaseAuthBackend:
             return user
 
         except jwt.ExpiredSignatureError:
-            print("Problem is expired")
+            logger.warning("Problem is expired")
             return None
         except jwt.InvalidTokenError:
             visitor_id = request.headers.get("X-Visitor-ID")
-            print(request.headers)
-            print(visitor_id)
+            logger.warning(request.headers)
+            logger.warning(visitor_id)
             return None
 
     def get_user(self, user_id):
         try:
             return User.objects.get(supabase_id=user_id)
         except User.DoesNotExist:
-            print("no user asshole!?")
+            logger.warning("no user asshole!?")
             return None
 
 
@@ -65,7 +69,7 @@ class PaddleAuthBackend:
         signature = signature_parts[1].split("=")[1]
 
         if not timestamp or not signature:
-            print("Unable to extract timestamp or signature from signature")
+            logger.warning("Unable to extract timestamp or signature from signature")
             return {"error": "Unable to extract timestamp or signature from signature"}
 
         signed_payload = f"{timestamp}:{body_raw}"
@@ -74,7 +78,8 @@ class PaddleAuthBackend:
         ).hexdigest()
 
         if not hmac.compare_digest(computed_hash, signature):
-            print("Computed signature does not match Paddle signature")
+            logger.warning("Computed signature does not match Paddle signature")
             return {"error": "Invalid signature"}
 
+        logger.info("Subscription accepted :)")
         return {"success": True}
