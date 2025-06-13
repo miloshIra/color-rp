@@ -17,9 +17,7 @@ class SupabaseAuthBackend:
         if not token:
             logger.warning("NO TOKEN")
             return None
-
         try:
-            logger.warning("What ?")
             payload = jwt.decode(
                 token,
                 settings.SUPABASE_JWT_SECRET,
@@ -54,7 +52,7 @@ class SupabaseAuthBackend:
         try:
             return User.objects.get(supabase_id=user_id)
         except User.DoesNotExist:
-            logger.warning("no user asshole!?")
+            logger.warning("no user")
             return None
 
 
