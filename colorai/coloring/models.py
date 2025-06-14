@@ -67,6 +67,9 @@ class User(AbstractUser):
             return self.username
         return self.email
 
+    class Meta:
+        indexes = [models.Index(fields=["supabase_id"])]
+
 
 class Visitor(models.Model):
     visitor_id = models.CharField(max_length=255, null=True, blank=True)
