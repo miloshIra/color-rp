@@ -28,7 +28,7 @@ from supabase import Client, create_client
 from client.client import RepliateClient
 from colorai import settings
 from coloring import models as color_models
-from coloring.backends import PaddleAuthBackend
+from coloring.backends import PolarAuthBackend
 from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
 from coloring.permissions import LimitedAnonymousAccess
 from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
@@ -276,9 +276,7 @@ class UserViewset(ModelViewSet):
     @action(detail=True, methods=["PATCH"])
     def terms(self, request, *args, **kwargs):
         user_id = kwargs.get("supabase_id")
-        print(kwargs.get("supabase_id"))
         user = User.objects.filter(supabase_id=user_id).first()
-        print(user)
         user.accepted_terms = True
         user.save()
 
@@ -286,27 +284,30 @@ class UserViewset(ModelViewSet):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class PaddleWebhookView(APIView):
+class PolarWebhookView(APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
         body_raw = request.body.decode("utf-8")
-        signature = request.headers.get("Paddle-Signature")
+        signature = request.headers.get("Webhook-Signature")
+        timestamp = request.headers.get("Webhook-Timestamp")
+        data = request.data.get("data")
 
-        check_token = PaddleAuthBackend.verify_token(
-            paddle_signature=signature, body_raw=body_raw
+        check_token = PolarAuthBackend.verify_token(
+            polar_webhook_signature=signature, timestamp=timestamp, body_raw=body_raw
         )
 
         data = request.data.get("data")
-        user_id = data["custom_data"]["user_id"]
+        user_id = data["metadata"]["user_id"]
         subscribed_user = User.objects.filter(supabase_id=user_id).first()
+        print(subscribed_user.email)
 
         if check_token.get("success"):
 
             sub_id = data["id"]
-            last_payment_date = data["current_billing_period"]["starts_at"]
-            next_payment_date = data["next_billed_at"]
+            last_payment_date = data["current_period_start"]
+            next_payment_date = data["current_period_end"]
 
             update_fields = {
                 "prompts_left": 500,
@@ -323,7 +324,7 @@ class PaddleWebhookView(APIView):
             discord_subscription_stats(
                 discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
                 user=subscribed_user.email,
-                action=request.data.get("event_type"),
+                action=request.data.get("type"),
             )
 
             return Response({"user": user_id, "status": "subscribed"})
@@ -341,82 +342,11 @@ class PaddleWebhookView(APIView):
         )
 
 
-data = {
-    "data": {
-        "id": "sub_01jm7ahxbps9kcr3jhpbaycr46",
-        "items": [
-            {
-                "price": {
-                    "id": "pri_01jktyszwt34s1escp4rk8zz0z",
-                    "name": "Subscription",
-                    "type": "standard",
-                    "status": "active",
-                    "quantity": {"maximum": 1, "minimum": 1},
-                    "tax_mode": "account_setting",
-                    "seller_id": "27322",
-                    "created_at": "2025-02-11T16:52:17.434851Z",
-                    "product_id": "pro_01jktyptn3fjdrt6seb4bb42zs",
-                    "unit_price": {"amount": "599", "currency_code": "USD"},
-                    "updated_at": "2025-02-13T00:16:22.73792Z",
-                    "custom_data": None,
-                    "description": "Monthly payment for application usage, includes over 500+ monthly prompts, countless photos generated, unlimited drawings database, generate once print forever.",
-                    "import_meta": None,
-                    "trial_period": None,
-                    "billing_cycle": {"interval": "month", "frequency": 1},
-                    "unit_price_overrides": [],
-                },
-                "status": "active",
-                "product": {
-                    "id": "pro_01jktyptn3fjdrt6seb4bb42zs",
-                    "name": "ColoringAI",
-                    "type": "standard",
-                    "status": "active",
-                    "image_url": None,
-                    "seller_id": "27322",
-                    "created_at": "2025-02-11T16:50:33.763Z",
-                    "updated_at": "2025-02-13T00:16:59.311Z",
-                    "custom_data": None,
-                    "description": "A subscription to coloring-ai web application that creates coloring drawings for children paint on.",
-                    "tax_category": "standard",
-                },
-                "quantity": 1,
-                "recurring": True,
-                "created_at": "2025-02-16T12:08:28.79Z",
-                "updated_at": "2025-02-16T12:08:28.79Z",
-                "trial_dates": None,
-                "next_billed_at": "2025-03-16T12:08:27.923808Z",
-            }
-        ],
-        "status": "active",
-        "discount": None,
-        "paused_at": None,
-        "address_id": "add_01jm7ahachmrx94ffwkw7qdtbm",
-        "created_at": "2025-02-16T12:08:28.79Z",
-        "started_at": "2025-02-16T12:08:27.923808Z",
-        "updated_at": "2025-02-16T12:08:28.79Z",
-        "business_id": None,
-        "canceled_at": None,
-        "custom_data": {"user_id": "205d1772-7bd7-4231-8201-245aa838b17f"},
-        "customer_id": "ctm_01jkxw6s9rz0vjsbpz7tc6jc3x",
-        "import_meta": None,
-        "billing_cycle": {"interval": "month", "frequency": 1},
-        "currency_code": "USD",
-        "next_billed_at": "2025-03-16T12:08:27.923808Z",
-        "billing_details": None,
-        "collection_mode": "automatic",
-        "first_billed_at": "2025-02-16T12:08:27.923808Z",
-        "scheduled_change": None,
-        "current_billing_period": {
-            "ends_at": "2025-03-16T12:08:27.923808Z",
-            "starts_at": "2025-02-16T12:08:27.923808Z",
-        },
-    },
-    "event_id": "evt_01jm7ahy1mhnp5y42990maq3cm",
-    "event_type": "subscription.activated",
-    "occurred_at": "2025-02-16T12:08:29.493055Z",
-    "notification_id": "ntf_01jm7ahy61q2pwk2db4na9k3a7",
-}
+data = {}
 
 
 def _i_dont_even_know_how_to_write_code():
+    """This is here to remind you how bad you are,
+    you can never delete it, cause you will never be good.
+    """
     pass
