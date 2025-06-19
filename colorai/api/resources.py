@@ -20,7 +20,6 @@ from rest_framework.mixins import (
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from supabase import Client, create_client
@@ -252,11 +251,11 @@ class UserViewset(ModelViewSet):
         user = User.objects.get(supabase_id=user_id)
         print(user)
 
-        cancel_url = f"https://api.paddle.com/subscriptions/{user.sub_id}/cancel"
+        cancel_url = f"/{user.sub_id}/cancel"
 
         payload = {
-            "vendor_id": settings.PADDLE_VENDOR_ID,
-            "api_key": settings.PADDLE_API_KEY,
+            "vendor_id": "",
+            "api_key": "",
             "subscription_id": user.sub_id,
         }
 
@@ -290,18 +289,15 @@ class PolarWebhookView(APIView):
 
     def post(self, request, *args, **kwargs):
         body_raw = request.body.decode("utf-8")
-        signature = request.headers.get("Webhook-Signature")
-        timestamp = request.headers.get("Webhook-Timestamp")
         data = request.data.get("data")
 
-        check_token = PolarAuthBackend.verify_token(
-            polar_webhook_signature=signature, timestamp=timestamp, body_raw=body_raw
+        check_token = PolarAuthBackend.verify_polar_webhook_signature(
+            request=request, body_raw=body_raw
         )
 
         data = request.data.get("data")
         user_id = data["metadata"]["user_id"]
         subscribed_user = User.objects.filter(supabase_id=user_id).first()
-        print(subscribed_user.email)
 
         if check_token.get("success"):
 
