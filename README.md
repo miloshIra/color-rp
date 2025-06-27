@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Python 3.12
+- Python 3.15.5
 
 ## Local setup
 
@@ -12,4 +12,5 @@ python3 -m venv venv
 source venv/bin/activate
 # set up the .env file
 python3 colorai/manage.py runserver
+
 ```
