@@ -71,7 +71,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://localhost:8080",
     "http://localhost:8080",
-    "https://yourfrontenddomain.com",
+    "https://coloring-ai.art",
     "https://34.194.127.46",
     "https://54.234.237.108",
     "https://3.208.120.145",
@@ -100,8 +100,8 @@ CORS_ALLOW_HEADERS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",  # Default backend
-    "coloring.backends.SupabaseAuthBackend",  # Your custom backend
+    "django.contrib.auth.backends.ModelBackend",
+    "coloring.backends.SupabaseAuthBackend",
 ]
 
 REST_FRAMEWORK = {
