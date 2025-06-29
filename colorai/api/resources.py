@@ -302,6 +302,7 @@ class PolarWebhookView(APIView):
         if check_token.get("success"):
 
             sub_id = data["id"]
+            polar_customer_id = data["customer_id"]
             last_payment_date = data["current_period_start"]
             next_payment_date = data["current_period_end"]
 
@@ -311,7 +312,9 @@ class PolarWebhookView(APIView):
                 "last_payment_date": last_payment_date,
                 "sub_id": sub_id,
                 "is_subscribed": True,
+                "polar_customer_id": polar_customer_id,
             }
+
             for field, value in update_fields.items():
                 setattr(subscribed_user, field, value)
 

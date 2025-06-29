@@ -37,7 +37,7 @@ class User(AbstractUser):
     User model for the application.
     parameters:
         supabase_id: str
-        subscription: Subscription
+        sub_id: str
         username: str
         email: EmailField
         first_name: str
@@ -50,6 +50,7 @@ class User(AbstractUser):
         next_payment_date: DateTime
         billing_period: str
         is_subscribed: bool
+        polar_customer_id: str
     """
 
     supabase_id = models.CharField(max_length=255, null=True, blank=True)
@@ -61,6 +62,7 @@ class User(AbstractUser):
     total_prompts = models.IntegerField(default=0)
     accepted_terms = models.BooleanField(default=False)
     sub_id = models.CharField(null=True, blank=True)
+    polar_customer_id = models.CharField(null=True, blank=True)
 
     def __str__(self):
         if self.username:

@@ -30,4 +30,5 @@ class UserSerializer(serializers.ModelSerializer):
             "is_subscribed",
             "prompts_left",
             "accepted_terms",
+            "polar_customer_id",
         ]
