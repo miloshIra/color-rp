@@ -63,7 +63,6 @@ class PolarAuthBackend:
     def verify_polar_webhook_signature(*, request: HttpRequest, body_raw: str) -> dict:
 
         polar_webhook_secret = settings.POLAR_WEBHOOK_SECRET
-        logger.warning("This is the secret ", polar_webhook_secret)
 
         try:
             event = validate_event(
@@ -72,9 +71,6 @@ class PolarAuthBackend:
                 secret=polar_webhook_secret,
             )
 
-            print(event)
-            logger.warning("This is event ", event)
-            logger.warning("This is event type ", type(event))
             return {"success": event}
 
         except WebhookVerificationError as e:
