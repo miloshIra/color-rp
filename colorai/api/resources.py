@@ -4,6 +4,12 @@ import tempfile
 from io import BytesIO
 
 import requests
+from client.client import RepliateClient
+from coloring import models as color_models
+from coloring.backends import PolarAuthBackend
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
+from coloring.permissions import LimitedAnonymousAccess
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -22,15 +28,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from supabase import Client, create_client
 
-from client.client import RepliateClient
 from colorai import settings
-from coloring import models as color_models
-from coloring.backends import PolarAuthBackend
-from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
-from coloring.permissions import LimitedAnonymousAccess
-from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
+from supabase import Client, create_client
 
 from . import serializers
 
@@ -303,11 +303,11 @@ class PolarWebhookView(APIView):
 
             sub_id = data["id"]
             polar_customer_id = data["customer_id"]
-            last_payment_date = data["current_period_start"]
-            next_payment_date = data["current_period_end"]
+            last_payment_date = data.get("current_period_start")
+            next_payment_date = data.get("current_period_end")
 
             update_fields = {
-                "prompts_left": 500,
+                "prompts_left": 500 if next_payment_date else 100,
                 "next_payment_date": next_payment_date,
                 "last_payment_date": last_payment_date,
                 "sub_id": sub_id,
@@ -339,9 +339,6 @@ class PolarWebhookView(APIView):
             user=user,
             action=data["event_type"],
         )
-
-
-data = {}
 
 
 def _i_dont_even_know_how_to_write_code():
