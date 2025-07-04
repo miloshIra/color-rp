@@ -63,6 +63,7 @@ class User(AbstractUser):
     accepted_terms = models.BooleanField(default=False)
     sub_id = models.CharField(null=True, blank=True)
     polar_customer_id = models.CharField(null=True, blank=True)
+    free_prompts = models.IntegerField(default=3)
 
     def __str__(self):
         if self.username:

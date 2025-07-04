@@ -4,12 +4,6 @@ import tempfile
 from io import BytesIO
 
 import requests
-from client.client import RepliateClient
-from coloring import models as color_models
-from coloring.backends import PolarAuthBackend
-from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
-from coloring.permissions import LimitedAnonymousAccess
-from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -28,9 +22,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-
-from colorai import settings
 from supabase import Client, create_client
+
+from client.client import RepliateClient
+from colorai import settings
+from coloring import models as color_models
+from coloring.backends import PolarAuthBackend
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
+from coloring.permissions import LimitedAnonymousAccess
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 
 from . import serializers
 
@@ -77,6 +77,7 @@ class PromptViewset(ModelViewSet):
                 request.user.is_authenticated
                 and request.user.prompts_left > 0
                 and request.user.is_subscribed
+                or request.user.free_prompts > 0
             ):
                 input = request.data["prompt"]
                 client_response = RepliateClient.get_prompt(input=input)
@@ -131,6 +132,7 @@ class PromptViewset(ModelViewSet):
                     user = User.objects.get(supabase_id=request.user.supabase_id)
                     user.prompts_left = user.prompts_left - 1
                     user.total_prompts = user.total_prompts + 1
+                    user.free_prompts = user.free_prompts - 1
                     user.save()
 
                 serializer = self.get_serializer(new_prompt)
@@ -244,28 +246,31 @@ class UserViewset(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
-    @action(detail=True, methods=["POST"])
-    def unsubscribe(self, request, *args, **kwargs):
-        user_id = kwargs.get("supabase_id")
-        print(user_id)
-        user = User.objects.get(supabase_id=user_id)
-        print(user)
+        # @action(detail=True, methods=["POST"])
+        # def unsubscribe(self, request, *args, **kwargs):
+        #     """
+        #     Not needed, subscriptions are managed by polar.sh
+        #     """
+        #     user_id = kwargs.get("supabase_id")
+        #     print(user_id)
+        #     user = User.objects.get(supabase_id=user_id)
+        #     print(user)
 
-        cancel_url = f"/{user.sub_id}/cancel"
+        #     cancel_url = f"/{user.sub_id}/cancel"
 
-        payload = {
-            "vendor_id": "",
-            "api_key": "",
-            "subscription_id": user.sub_id,
-        }
+        #     payload = {
+        #         "vendor_id": "",
+        #         "api_key": "",
+        #         "subscription_id": user.sub_id,
+        #     }
 
-        try:
-            response = requests.post(cancel_url, data=payload)
-            response_data = response.json()
-            print(response_data)
+        #     try:
+        #         response = requests.post(cancel_url, data=payload)
+        #         response_data = response.json()
+        #         print(response_data)
 
-        except Exception as e:
-            print(e)
+        #     except Exception as e:
+        #         print(e)
 
         # user.is_subscribed = False # Add this when unsubscribe starts working.
         # user.save()
