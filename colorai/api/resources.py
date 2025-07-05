@@ -73,14 +73,21 @@ class PromptViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            if (
-                request.user.is_authenticated
-                and request.user.prompts_left > 0
-                and request.user.is_subscribed
-                or request.user.free_prompts > 0
-            ):
-                input = request.data["prompt"]
-                client_response = RepliateClient.get_prompt(input=input)
+            if request.user.is_authenticated:
+                if (
+                    request.user.prompts_left > 0
+                    and request.user.is_subscribed
+                    or request.user.free_prompts > 0
+                ):
+                    input = request.data["prompt"]
+                    client_response = RepliateClient.get_prompt(input=input)
+                else:
+                    return Response(
+                        {
+                            "detail": "No subscription or out of prompts! Click Subscribe on the top right to continue!"
+                        },
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
             elif request.user.is_anonymous:
                 input = request.data["prompt"]
                 client_response = RepliateClient.get_prompt(input=input)
@@ -306,8 +313,8 @@ class PolarWebhookView(APIView):
 
         if check_token.get("success"):
 
-            sub_id = data["id"]
-            polar_customer_id = data["customer_id"]
+            sub_id = data.get("id")
+            polar_customer_id = data.get("customer_id")
             last_payment_date = data.get("current_period_start")
             next_payment_date = data.get("current_period_end")
 
