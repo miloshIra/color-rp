@@ -60,9 +60,14 @@ class SupabaseAuthBackend:
 
 
 class PolarAuthBackend:
-    def verify_polar_webhook_signature(*, request: HttpRequest, body_raw: str) -> dict:
+    def verify_polar_webhook_signature(
+        *, request: HttpRequest, body_raw: str, payment_type: str
+    ) -> dict:
 
-        polar_webhook_secret = settings.POLAR_WEBHOOK_SECRET
+        polar_webhook_secret = settings.POLAR_WEBHOOK_SECRET_PURCHASE
+
+        if "subscription" in payment_type:
+            polar_webhook_secret = settings.POLAR_WEBHOOK_SECRET_SUBSCRIBTION
 
         try:
             event = validate_event(
@@ -73,5 +78,5 @@ class PolarAuthBackend:
 
             return {"success": event}
 
-        except WebhookVerificationError as e:
+        except Exception as e:
             logger.error(f"Polar webhook verification failed: {e}")

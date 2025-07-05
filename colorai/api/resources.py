@@ -295,20 +295,21 @@ class UserViewset(ModelViewSet):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class PolarWebhookView(APIView):
+class PolarWebhookSubscriptionView(APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def post(self, request, *args, **kwargs):
         body_raw = request.body.decode("utf-8")
+        payment_type = request.data.get("type")
         data = request.data.get("data")
 
         check_token = PolarAuthBackend.verify_polar_webhook_signature(
-            request=request, body_raw=body_raw
+            request=request, body_raw=body_raw, payment_type=payment_type
         )
 
         data = request.data.get("data")
-        user_id = data["metadata"]["user_id"]
+        user_id = data.get("metadata").get("user_id")
         subscribed_user = User.objects.filter(supabase_id=user_id).first()
 
         if check_token.get("success"):
@@ -319,7 +320,7 @@ class PolarWebhookView(APIView):
             next_payment_date = data.get("current_period_end")
 
             update_fields = {
-                "prompts_left": 500 if next_payment_date else 100,
+                "prompts_left": 500,
                 "next_payment_date": next_payment_date,
                 "last_payment_date": last_payment_date,
                 "sub_id": sub_id,
@@ -344,12 +345,51 @@ class PolarWebhookView(APIView):
             {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
-    def handle_subscription_action(self, data, user):
-        user = user.email
-        discord_subscription_stats(
-            discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
-            user=user,
-            action=data["event_type"],
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PolarWebhookPurchaseView(APIView):
+    permission_classes = [AllowAny]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        body_raw = request.body.decode("utf-8")
+        data = request.data.get("data")
+        payment_type = request.data.get("type")
+
+        check_token = PolarAuthBackend.verify_polar_webhook_signature(
+            request=request, body_raw=body_raw, payment_type=payment_type
+        )
+
+        data = request.data.get("data")
+        user_id = data.get("metadata").get("user_id")
+        user = User.objects.filter(supabase_id=user_id).first()
+
+        if check_token.get("success"):
+            sub_id = data.get("id")
+            polar_customer_id = data.get("customer_id")
+
+            update_fields = {
+                "prompts_left": 100,
+                "sub_id": sub_id,
+                "is_subscribed": True,
+                "polar_customer_id": polar_customer_id,
+            }
+
+            for field, value in update_fields.items():
+                setattr(user, field, value)
+
+            user.save()
+
+            discord_subscription_stats(
+                discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
+                user=user.email,
+                action=request.data.get("type"),
+            )
+
+            return Response({"user": user_id, "status": "subscribed"})
+
+        return Response(
+            {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
 

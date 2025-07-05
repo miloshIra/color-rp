@@ -3,7 +3,12 @@ from django.conf.urls.static import static
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
-from .resources import PolarWebhookView, PromptViewset, UserViewset
+from .resources import (
+    PolarWebhookPurchaseView,
+    PolarWebhookSubscriptionView,
+    PromptViewset,
+    UserViewset,
+)
 
 router = SimpleRouter()
 
@@ -14,7 +19,14 @@ router.register(r"users", UserViewset, basename="user")
 
 urlpatterns = [
     path("api/", include(router.urls)),
-    path("api/hooks/", PolarWebhookView.as_view(), name="hooks"),
+    path(
+        "api/hooks/subscription",
+        PolarWebhookSubscriptionView.as_view(),
+        name="hook-subscription",
+    ),
+    path(
+        "api/hooks/purchase", PolarWebhookPurchaseView.as_view(), name="hook-purchase"
+    ),
 ]
 
 if settings.DEBUG:
