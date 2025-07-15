@@ -364,29 +364,38 @@ class PolarWebhookPurchaseView(APIView):
         user_id = data.get("metadata").get("user_id")
         user = User.objects.filter(supabase_id=user_id).first()
 
-        if check_token.get("success"):
-            sub_id = data.get("id")
-            polar_customer_id = data.get("customer_id")
+        try:
+            if check_token.get("success"):
+                logger.warning("in token check")
+                sub_id = data.get("id")
+                polar_customer_id = data.get("customer_id")
 
-            update_fields = {
-                "prompts_left": 100,
-                "sub_id": sub_id,
-                "is_subscribed": True,
-                "polar_customer_id": polar_customer_id,
-            }
+                update_fields = {
+                    "prompts_left": 100,
+                    "sub_id": sub_id,
+                    "is_subscribed": True,
+                    "polar_customer_id": polar_customer_id,
+                }
 
-            for field, value in update_fields.items():
-                setattr(user, field, value)
+                for field, value in update_fields.items():
+                    setattr(user, field, value)
 
-            user.save()
+                user.save()
 
-            discord_subscription_stats(
-                discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
-                user=user.email,
-                action=request.data.get("type"),
+                discord_subscription_stats(
+                    discord_webhook_url=settings.DISCORD_SUBS_WEBHOOK,
+                    user=user.email,
+                    action=request.data.get("type"),
+                )
+
+                return Response({"user": user_id, "status": "subscribed"})
+
+        except Exception as e:
+            raise DiscordAlertException(
+                message=str(e),
+                error=e,
+                request=request,
             )
-
-            return Response({"user": user_id, "status": "subscribed"})
 
         return Response(
             {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
