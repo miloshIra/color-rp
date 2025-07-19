@@ -80,6 +80,19 @@ class Visitor(models.Model):
     last_seen = models.DateTimeField(default=timezone.now)
 
 
+# Add models.Model
+class Drawinig:
+    user_id = models.ForeignKey(User)
+    prompt_id = models.ForeignKey(Prompt)
+    coloring_page = models.ImageField(
+        _("images"), upload_to="images", null=True, blank=True
+    )
+    coloring_page_url = models.URLField(
+        _("image URL"), max_length=500, null=True, blank=True
+    )
+    is_favourite = models.BooleanField(default=False)
+
+
 # class Subscription(models.Model):
 #     """
 #     Subscription model for the application.
