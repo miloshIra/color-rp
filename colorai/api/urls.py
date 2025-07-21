@@ -4,6 +4,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from .resources import (
+    DrawingViewSet,
     PolarWebhookPurchaseView,
     PolarWebhookSubscriptionView,
     PromptViewset,
@@ -15,6 +16,7 @@ router = SimpleRouter()
 # Register the viewset with the router
 router.register(r"prompts", PromptViewset, basename="prompt")
 router.register(r"users", UserViewset, basename="user")
+router.register(r"drawings", DrawingViewSet, basename="drawing")
 
 
 urlpatterns = [

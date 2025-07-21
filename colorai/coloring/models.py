@@ -80,17 +80,18 @@ class Visitor(models.Model):
     last_seen = models.DateTimeField(default=timezone.now)
 
 
-# Add models.Model
-class Drawinig:
-    user_id = models.ForeignKey(User)
-    prompt_id = models.ForeignKey(Prompt)
-    coloring_page = models.ImageField(
-        _("images"), upload_to="images", null=True, blank=True
+class Drawing(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey(
+        User, related_name="drawings", blank=True, null=True, on_delete=models.CASCADE
     )
-    coloring_page_url = models.URLField(
-        _("image URL"), max_length=500, null=True, blank=True
+    prompt = models.ForeignKey(
+        Prompt, related_name="drawings", blank=True, null=True, on_delete=models.CASCADE
     )
+    drawing_url = models.URLField(_("image URL"), max_length=500, null=True, blank=True)
     is_favourite = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 # class Subscription(models.Model):

@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import tempfile
@@ -189,6 +190,77 @@ class PromptViewset(ModelViewSet):
     def list(self, request, *args, **kwargs):
         try:
             return super().list(request, *args, **kwargs)
+        except Exception as e:
+            raise DiscordAlertException(
+                message="Error in PromptViewset",
+                error=e,
+                request=request,
+            )
+
+
+class DrawingViewSet(ModelViewSet):
+    serializer_class = serializers.DrawingSerializer
+    permission_classes = [AllowAny]
+    lookup_field = "uuid"
+
+    def get_queryset(self):
+        try:
+            return color_models.Drawing.objects.filter(
+                user=12
+                # user=self.request.user.supabase_id
+            )
+        except Exception as e:
+            raise DiscordAlertException(
+                message=str(e),
+                error=e,
+                request=self.request,
+            )
+
+    def create(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            if not data:
+                return Response({"Error": "Error saving drawing, no drawing provided"})
+
+            name = data.get("name")
+            base64_image = data.get("image")
+
+            if not name or not base64_image:
+                return Response({"Error": "Missing name or image"}, status=400)
+
+            if "," in base64_image:
+                base64_image = base64_image.split(",")[1]
+
+            try:
+                image = base64.b64decode(base64_image)
+            except Exception:
+                return Response({"Error": "Invalid base64 image"}, status=400)
+
+            new_drawing = color_models.Drawing(name=data.get("name"), user=request.user)
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+                temp_file.write(image)
+                temp_file_path = temp_file.name
+
+            with open(temp_file_path, "rb") as image_file:
+                supabase.storage.from_("images").upload(
+                    name,
+                    image_file,
+                    file_options={
+                        "cache-control": "3600",
+                        "content-type": "image/jpeg",
+                        "upsert": "false",
+                    },
+                )
+
+            os.remove(temp_file_path)
+            drawing_url = supabase.storage.from_(bucket_name).get_public_url(name)
+            new_drawing.drawing_url = drawing_url
+            new_drawing.save()
+
+            serializer = self.get_serializer(new_drawing)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         except Exception as e:
             raise DiscordAlertException(
                 message="Error in PromptViewset",

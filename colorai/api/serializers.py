@@ -4,11 +4,15 @@ from coloring import models as models
 
 
 class PromptSerializer(serializers.ModelSerializer):
-    images = serializers.ImageField(required=False)
-
     class Meta:
         model = models.Prompt
-        fields = ["prompt", "uuid", "image_url", "images"]
+        fields = ["prompt", "uuid", "image_url"]
+
+
+class DrawingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Drawing
+        fields = ["user", "prompt", "drawing_url", "is_favourite"]
 
 
 class UserSerializer(serializers.ModelSerializer):
