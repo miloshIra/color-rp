@@ -199,15 +199,15 @@ class PromptViewset(ModelViewSet):
 
 
 class DrawingViewSet(ModelViewSet):
+    lookup_field = "uuid"
     serializer_class = serializers.DrawingSerializer
     permission_classes = [AllowAny]
-    lookup_field = "uuid"
 
     def get_queryset(self):
         try:
             return color_models.Drawing.objects.filter(
-                user=12
-                # user=self.request.user.supabase_id
+                # user=12
+                user=self.request.user.id
             )
         except Exception as e:
             raise DiscordAlertException(
@@ -222,10 +222,9 @@ class DrawingViewSet(ModelViewSet):
             if not data:
                 return Response({"Error": "Error saving drawing, no drawing provided"})
 
-            name = data.get("name")
             base64_image = data.get("image")
 
-            if not name or not base64_image:
+            if not base64_image:
                 return Response({"Error": "Missing name or image"}, status=400)
 
             if "," in base64_image:
@@ -236,7 +235,8 @@ class DrawingViewSet(ModelViewSet):
             except Exception:
                 return Response({"Error": "Invalid base64 image"}, status=400)
 
-            new_drawing = color_models.Drawing(name=data.get("name"), user=request.user)
+            new_drawing = color_models.Drawing(user=request.user)
+            name = "drawing_" + str(new_drawing.uuid)
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
                 temp_file.write(image)
@@ -256,11 +256,45 @@ class DrawingViewSet(ModelViewSet):
             os.remove(temp_file_path)
             drawing_url = supabase.storage.from_(bucket_name).get_public_url(name)
             new_drawing.drawing_url = drawing_url
+            new_drawing.name = name
             new_drawing.save()
 
             serializer = self.get_serializer(new_drawing)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        except Exception as e:
+            raise DiscordAlertException(
+                message="Error in PromptViewset",
+                error=e,
+                request=request,
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+
+            instance = self.get_object()
+            if not instance:
+                return Response(
+                    {"Error": "No drawing found with that uuid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            image_name = "drawing_" + str(instance.uuid)
+            supabase.storage.from_("images").remove([image_name])
+            instance.delete()
+
+            return Response(
+                {"message": "Drawing successfully deleted"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"Error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
         except Exception as e:
             raise DiscordAlertException(
                 message="Error in PromptViewset",

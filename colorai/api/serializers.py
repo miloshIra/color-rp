@@ -12,7 +12,7 @@ class PromptSerializer(serializers.ModelSerializer):
 class DrawingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Drawing
-        fields = ["user", "prompt", "drawing_url", "is_favourite"]
+        fields = ["id", "name", "user", "drawing_url", "is_favourite", "uuid"]
 
 
 class UserSerializer(serializers.ModelSerializer):

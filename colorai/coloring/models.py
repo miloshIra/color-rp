@@ -90,6 +90,7 @@ class Drawing(models.Model):
     )
     drawing_url = models.URLField(_("image URL"), max_length=500, null=True, blank=True)
     is_favourite = models.BooleanField(default=False)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
