@@ -205,10 +205,7 @@ class DrawingViewSet(ModelViewSet):
 
     def get_queryset(self):
         try:
-            return color_models.Drawing.objects.filter(
-                # user=12
-                user=self.request.user.id
-            )
+            return color_models.Drawing.objects.filter(user=self.request.user.id)
         except Exception as e:
             raise DiscordAlertException(
                 message=str(e),
@@ -358,35 +355,6 @@ class UserViewset(ModelViewSet):
                 {"exists": False, "message": "User does not exist."},
                 status=status.HTTP_200_OK,
             )
-
-        # @action(detail=True, methods=["POST"])
-        # def unsubscribe(self, request, *args, **kwargs):
-        #     """
-        #     Not needed, subscriptions are managed by polar.sh
-        #     """
-        #     user_id = kwargs.get("supabase_id")
-        #     print(user_id)
-        #     user = User.objects.get(supabase_id=user_id)
-        #     print(user)
-
-        #     cancel_url = f"/{user.sub_id}/cancel"
-
-        #     payload = {
-        #         "vendor_id": "",
-        #         "api_key": "",
-        #         "subscription_id": user.sub_id,
-        #     }
-
-        #     try:
-        #         response = requests.post(cancel_url, data=payload)
-        #         response_data = response.json()
-        #         print(response_data)
-
-        #     except Exception as e:
-        #         print(e)
-
-        # user.is_subscribed = False # Add this when unsubscribe starts working.
-        # user.save()
 
         return Response({"response": response_data})
 
