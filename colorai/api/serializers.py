@@ -36,3 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
             "accepted_terms",
             "polar_customer_id",
         ]
+
+
+class ThisIsACoverUp:
+    pass
