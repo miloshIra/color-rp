@@ -93,13 +93,3 @@ class Drawing(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-
-# class Subscription(models.Model):
-#     """
-#     Subscription model for the application.
-#     """
-
-#     is_active = models.BooleanField(default=False)
-#     date_subscribed = models.DateTimeField(null=True, blank=True)
-#     valid_until = models.DateTimeField(null=True, blank=True)

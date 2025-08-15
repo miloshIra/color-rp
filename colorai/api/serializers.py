@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from coloring import models as models
+from rest_framework import serializers
 
 
 class PromptSerializer(serializers.ModelSerializer):
@@ -36,7 +35,3 @@ class UserSerializer(serializers.ModelSerializer):
             "accepted_terms",
             "polar_customer_id",
         ]
-
-
-class ThisIsACoverUp:
-    pass

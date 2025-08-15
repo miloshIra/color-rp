@@ -1,6 +1,7 @@
 # Python virtual environment
 venv/
 media/
+supabase/
 
 # Byte-compiled files
 __pycache__/
