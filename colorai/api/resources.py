@@ -5,6 +5,12 @@ import tempfile
 from io import BytesIO
 
 import requests
+from client.client import RepliateClient
+from coloring import models as color_models
+from coloring.backends import PolarAuthBackend
+from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
+from coloring.permissions import LimitedAnonymousAccess
+from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -23,15 +29,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from supabase import Client, create_client
 
-from client.client import RepliateClient
 from colorai import settings
-from coloring import models as color_models
-from coloring.backends import PolarAuthBackend
-from coloring.exceptions import DiscordAlertException, UserNotSubscribedException
-from coloring.permissions import LimitedAnonymousAccess
-from coloring.utils import discord_alert, discord_subscription_stats, discord_user_stats
+from supabase import Client, create_client
 
 from . import serializers
 
@@ -479,5 +479,6 @@ class PolarWebhookPurchaseView(APIView):
 def _i_dont_even_know_how_to_write_code():
     """This is here to remind you how bad you are,
     you can never delete it, cause you will never be good.
+    it's harsh but it's true.
     """
     pass

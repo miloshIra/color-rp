@@ -13,9 +13,6 @@ replicate = replicate.Client(api_token=API_KEY)
 
 
 class RepliateClient:
-    def __init__(self) -> None:
-        self.hi = "HI"
-
     def get_prompt(input):
         try:
             output = replicate.run(
