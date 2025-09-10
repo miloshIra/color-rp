@@ -479,6 +479,6 @@ class PolarWebhookPurchaseView(APIView):
 def _i_dont_even_know_how_to_write_code():
     """This is here to remind you how bad you are,
     you can never delete it, cause you will never be good.
-    it's harsh but it's true.
+    it's harsh but it's true. I did good today, maybe.
     """
     pass
