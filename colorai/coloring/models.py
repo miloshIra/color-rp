@@ -27,6 +27,9 @@ class Prompt(models.Model, DateTimeMixin):
     def __str__(self):
         return self.prompt or f"Prompt {self.id}"
 
+    class Meta:
+        indexes = [models.Index(fields=["uuid"])]
+
 
 class Media(models.Model):
     pass
@@ -93,3 +96,6 @@ class Drawing(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["uuid"])]
