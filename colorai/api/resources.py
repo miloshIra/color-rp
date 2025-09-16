@@ -197,6 +197,17 @@ class PromptViewset(ModelViewSet):
                 request=request,
             )
 
+    @action(detail=False, methods=["GET"])
+    def explore(self, request, *args, **kwargs):
+        try:
+            return color_models.Prompt.objects.all()
+        except Exception as e:
+            raise DiscordAlertException(
+                message="Error in PromptViewset",
+                error=e,
+                request=request,
+            )
+
 
 class DrawingViewSet(ModelViewSet):
     lookup_field = "uuid"
