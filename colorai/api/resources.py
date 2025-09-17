@@ -200,7 +200,9 @@ class PromptViewset(ModelViewSet):
     @action(detail=False, methods=["GET"])
     def explore(self, request, *args, **kwargs):
         try:
-            return color_models.Prompt.objects.all()
+            prompts = color_models.Prompt.objects.all()
+            serializer = self.get_serializer(prompts, many=True)
+            return Response(serializer.data)
         except Exception as e:
             raise DiscordAlertException(
                 message="Error in PromptViewset",
