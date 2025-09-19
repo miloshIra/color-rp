@@ -199,10 +199,17 @@ class PromptViewset(ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def explore(self, request, *args, **kwargs):
+        self.pagination_class = LoadmorePagination
+
         try:
-            prompts = color_models.Prompt.objects.all()
-            serializer = self.get_serializer(prompts, many=True)
-            return Response(serializer.data)
+            page = self.paginate_queryset(color_models.Prompt.objects.all())
+
+            if page is not None:
+                serializer = serializers.PromptSerializer(page, many=True)
+                print(serializer)
+                return self.get_paginated_response(serializer.data)
+
+            # return Response(serializer.data)
         except Exception as e:
             raise DiscordAlertException(
                 message="Error in PromptViewset",
@@ -486,6 +493,23 @@ class PolarWebhookPurchaseView(APIView):
 
         return Response(
             {"error": "Subscription failed"}, status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+class LoadmorePagination(pagination.LimitOffsetPagination):
+    default_limit = 10
+    limit_query_param = "limit"
+    offset_query_param = "offset"
+    max_limit = None
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "count": self.count,
+                "next": self.get_next_link(),
+                "prevous": self.get_previous_link(),
+                "result": data,
+            }
         )
 
 
