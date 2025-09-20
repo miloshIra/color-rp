@@ -206,7 +206,6 @@ class PromptViewset(ModelViewSet):
 
             if page is not None:
                 serializer = serializers.PromptSerializer(page, many=True)
-                print(serializer)
                 return self.get_paginated_response(serializer.data)
 
             # return Response(serializer.data)
