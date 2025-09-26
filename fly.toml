@@ -4,7 +4,7 @@
 #
 
 app = 'color-rp'
-primary_region = 'bos'
+primary_region = 'mad'
 console_command = '/code/manage.py shell'
 
 [build]
