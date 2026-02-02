@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from .resources import (
     DrawingViewSet,
+    HealthView,
     PolarWebhookPurchaseView,
     PolarWebhookSubscriptionView,
     PromptViewset,
@@ -21,6 +22,7 @@ router.register(r"drawings", DrawingViewSet, basename="drawing")
 
 urlpatterns = [
     path("api/", include(router.urls)),
+    path("api/health", HealthView.as_view(), name="health"),
     path(
         "api/hooks/subscription",
         PolarWebhookSubscriptionView.as_view(),

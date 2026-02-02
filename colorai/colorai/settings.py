@@ -49,37 +49,34 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "django_extensions",
     "coloring.apps.ColoringConfig",
-    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # <-- must be high
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://localhost:3000",
-    "http://localhost:3000",
-    "https://localhost:8080",
-    "http://localhost:8080",
-    "https://coloring-ai.art",
-    "https://34.194.127.46",
-    "https://54.234.237.108",
-    "https://3.208.120.145",
-    "https://44.226.236.210",
-    "https://44.241.183.62",
-    "https://100.20.172.113",
-    "https://88c6-89-205-63-79.ngrok-free.app",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://coloring-ai.art",
+#     "http://coloring-ai.art",
+#     "https://34.194.127.46",
+#     "https://54.234.237.108",
+#     "https://3.208.120.145",
+#     "https://44.226.236.210",
+#     "https://44.241.183.62",
+#     "https://100.20.172.113",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_METHODS = [
     "GET",

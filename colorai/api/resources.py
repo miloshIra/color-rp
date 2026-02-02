@@ -512,6 +512,13 @@ class LoadmorePagination(pagination.LimitOffsetPagination):
         )
 
 
+class HealthView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 def _i_dont_even_know_how_to_write_code():
     """This is here to remind you how bad you are,
     you can never delete it, cause you will never be good.
